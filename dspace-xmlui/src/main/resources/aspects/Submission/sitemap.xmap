@@ -98,9 +98,8 @@
             <map:call function="doWorkflowEditMetadata">
               <map:parameter name="handle" value="{1}/{2}"/>
             </map:call>
-            </map:match>
+          </map:match>
 
-          
           <map:generate/>
 
           

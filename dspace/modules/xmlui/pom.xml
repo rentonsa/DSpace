@@ -2,7 +2,10 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.dspace.modules</groupId>
     <artifactId>xmlui</artifactId>
+
     <packaging>war</packaging>
+    <!-- DATASHARE - end -->
+	
     <name>DSpace XML-UI (Manakin) :: Local Customizations</name>
     <description>
         This project allows you to overlay your own local XML-UI customizations
@@ -105,6 +108,23 @@
                         </executions>
                     </plugin>
 
+                    <!-- DATASHARE - start -->
+                    <!-- datashare need a jar of xmlui -->
+                    <!-- <plugin> -->
+	            <!--   <groupId>org.apache.maven.plugins</groupId> -->
+	            <!--   <artifactId>maven-jar-plugin</artifactId> -->
+	            <!--   <executions> -->
+	            <!--     <execution> -->
+	            <!--       <id>make-a-jar</id> -->
+	            <!--       <phase>package</phase> -->
+	            <!--       <goals> -->
+	            <!--         <goal>jar</goal> -->
+	            <!--       </goals> -->
+	            <!--     </execution> -->
+	            <!--   </executions> -->
+	            <!-- </plugin> -->
+                    <!-- DATASHARE - end -->
+	
                 </plugins>
             </build>
         </profile>
@@ -172,7 +192,6 @@
                             </execution>
                         </executions>
                     </plugin>
-
                 </plugins>
             </build>
             <dependencies>
@@ -193,6 +212,13 @@
             <artifactId>additions</artifactId>
         </dependency>
 
+        <!-- Atmire Statistics Exporter Dependency -->
+        <dependency>
+            <groupId>com.atmire</groupId>
+            <artifactId>atmire-statistics-exporter-api</artifactId>
+            <version>1.0.0</version>
+            <type>jar</type>
+        </dependency>
         <!-- DSpace XMLUI Languages -->
         <dependency>
             <groupId>org.dspace</groupId>

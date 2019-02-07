@@ -1807,6 +1807,27 @@ public class Item extends DSpaceObject
     }
 
     /**
+     * Get the combined size of all bitstreams in an item.
+     *  
+     * @return the size in bytes
+     */
+    public long getSize() throws SQLException
+    {
+        long size = 0;
+        Bundle bundles[] = this.getBundles();
+        for(int i = 0; i < bundles.length; i++)
+        {
+            Bitstream[] files = bundles[i].getBitstreams();
+            for(int j = 0; j < files.length; j++)
+            {
+                size += files[j].getSize();
+            }
+        }
+        
+        return size;
+    }
+
+    /**
      * Returns an iterator of Items possessing the passed metadata field, or only
      * those matching the passed value, if value is not Item.ANY
      *

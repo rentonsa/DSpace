@@ -11,6 +11,7 @@ import com.lyncode.xoai.dataprovider.exceptions.ConfigurationException;
 import com.lyncode.xoai.dataprovider.exceptions.MetadataBindException;
 import com.lyncode.xoai.dataprovider.exceptions.WritingXmlException;
 import com.lyncode.xoai.dataprovider.xml.XmlOutputContext;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
@@ -23,6 +24,7 @@ import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.dspace.app.util.Util;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.authorize.AuthorizeManager;
 import org.dspace.content.*;
@@ -30,6 +32,7 @@ import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.storage.rdbms.DatabaseManager;
+import org.dspace.storage.rdbms.TableRow;
 import org.dspace.storage.rdbms.TableRowIterator;
 import org.dspace.xoai.exceptions.CompilingException;
 import org.dspace.xoai.services.api.cache.XOAICacheService;
@@ -47,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import javax.xml.stream.XMLStreamException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -210,6 +214,10 @@ public class XOAI {
             SolrServer server = solrServerResolver.getServer();
             while (iterator.hasNext()) {
                 try {
+		    /*TableRow row = iterator.next();
+		    int itemId = row.getIntColumn("item_id");
+		    log.info("index: " + itemId);
+		    server.add(this.index(find(context, itemId)));*/
                     server.add(this.index(find(context, iterator.next().getIntColumn("item_id"))));
                     context.clearCache();
                 } catch (SQLException ex) {
@@ -299,6 +307,7 @@ public class XOAI {
         } catch (SQLException ex) {
             log.error(ex.getMessage());
         }
+
         return pub;
     }
 

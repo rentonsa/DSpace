@@ -139,7 +139,8 @@ public class SolrLogger
                 server.query(solrQuery);
 
                 //Attempt to retrieve all the statistic year cores
-                File solrDir = new File(ConfigurationManager.getProperty("dspace.dir") + "/solr/");
+		log.info("Setting the solrDir to:" + ConfigurationManager.getProperty("solr.home"));
+                File solrDir = new File(ConfigurationManager.getProperty("solr.home"));
                 File[] solrCoreFiles = solrDir.listFiles(new FileFilter() {
 
                     @Override
@@ -1402,7 +1403,9 @@ public class SolrLogger
     }
 
     private static HttpSolrServer createCore(HttpSolrServer solr, String coreName) throws IOException, SolrServerException {
-        String solrDir = ConfigurationManager.getProperty("dspace.dir") + File.separator + "solr" +File.separator;
+        //String solrDir = ConfigurationManager.getProperty("dspace.dir") + File.separator + "solr" +File.separator;
+	String solrDir = ConfigurationManager.getProperty("solr.home");
+	log.info("Solr dir is: " + solrDir);
         String baseSolrUrl = solr.getBaseURL().replace("statistics", "");
         HttpSolrServer returnServer = new HttpSolrServer(baseSolrUrl + "/" + coreName);
         try {
