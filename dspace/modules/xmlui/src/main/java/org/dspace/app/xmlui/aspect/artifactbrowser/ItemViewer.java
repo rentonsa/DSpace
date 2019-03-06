@@ -219,7 +219,11 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
             pageMeta.addMetadata("sfx","server").addContent(sfxserverUrl);
         }
         
-        // Add persistent identifiers
+        // DATASHARE - start
+        pageMeta.addMetadata("javascript", "static").addContent("static/js/datacite_metadata_schema_org_request.js");
+        // DATASHARE - end
+	
+	// Add persistent identifiers
         /* Temporarily switch to using metadata directly.
          * FIXME Proper fix is to have IdentifierService handle all durable
          * identifiers, whether minted here or elsewhere.
