@@ -525,12 +525,25 @@ implements DOIConnector
         }
         else if (!metadataDOI.equals(doi.substring(DOI.SCHEME.length())))
         {
+            // DATASHARE - start
+            // Code to display XML  when metadataDOI and doi.substring(DOI.SCHEME.length()) don't match
+            try {
+                log.info("metadataDOI: " + metadataDOI);
+                log.info("doi.substring(DOI.SCHEME.length()): " + doi.substring(DOI.SCHEME.length()));
+                Format format = Format.getCompactFormat();
+                format.setEncoding("UTF-8");
+                XMLOutputter xout = new XMLOutputter(format);
+                log.info("XML for when metadataDOI and DOI don't match:\n" + xout.outputString(root));
+            } catch(Exception e) {
+                log.info("Cannot display XML when metadataDOI and doi don't match " + e.toString());
+            }
+            // DATASHARE - end
             // FIXME: that's not an error. If at all, it is worth logging it.
             throw new DOIIdentifierException("DSO with type " + dso.getTypeText()
                     + " and id " + dso.getID() + " already has DOI "
                     + metadataDOI + ". Won't reserve DOI " + doi + " for it.");
         }
-        
+
         // DATASHARE - start
         // Code to display XML to be sent to Datacite
         try {
@@ -542,7 +555,7 @@ implements DOIConnector
           log.info("Cannot display XML sent to Datacite " + e.toString());
         }
         // DATASHARE - end
-        
+
         // send metadata as post to mds/metadata
         DataCiteResponse resp = this.sendMetadataPostRequest(doi, root);
         
