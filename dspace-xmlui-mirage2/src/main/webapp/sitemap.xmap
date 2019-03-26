@@ -48,6 +48,7 @@
     <map:components>
         <map:readers>
             <map:reader name="ConcatenationReader" src="org.dspace.app.xmlui.cocoon.ConcatenationReader"/>
+	    <map:reader name="ThemeResourceReader" src="org.dspace.app.xmlui.cocoon.ThemeResourceReader"/>
         </map:readers>
 
         <map:transformers>
