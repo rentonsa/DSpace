@@ -33,7 +33,8 @@ import org.apache.cocoon.environment.Redirector;
 import org.apache.cocoon.environment.Request;
 import org.apache.cocoon.environment.Response;
 import org.apache.cocoon.environment.SourceResolver;
-import org.apache.cocoon.servlet.multipart.PartOnDisk;
+//import org.apache.cocoon.servlet.multipart.PartOnDisk;
+import org.dspace.app.xmlui.cocoon.servlet.multipart.DSpacePartOnDisk;
 import org.apache.commons.fileupload.FileUploadBase.FileSizeLimitExceededException;
 import org.apache.log4j.Logger;
 import org.dspace.app.util.SubmissionInfo;
@@ -261,7 +262,7 @@ public class ResumableUpload extends AbstractAction
         
         // cocoon will have uploaded the chunk automatically
         // now move it to temporary directory
-        File chunkOrg = ((PartOnDisk)request.get("file")).getFile();
+        File chunkOrg = ((DSpacePartOnDisk)request.get("file")).getFile();
         File chunk = new File(chunkPath);
         
         log.debug("rename file " + chunkOrg + " to " + chunk);
