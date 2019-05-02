@@ -614,6 +614,14 @@ public class AuthenticationUtil
     	return realHttpRequest;
     }
 
+     /* DATASHARE start */
+     public static void logInAs(Context context, HttpServletRequest request,
+     EPerson eperson) throws SQLException
+     {
+         logIn(context, request, eperson);
+        }
+    /* DATASHARE end */
+
     /**
      * Has this user authenticated?
      * @param request

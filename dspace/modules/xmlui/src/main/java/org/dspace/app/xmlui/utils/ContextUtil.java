@@ -7,17 +7,19 @@
  */
 package org.dspace.app.xmlui.utils;
 
-import org.apache.cocoon.environment.ObjectModelHelper;
-import org.apache.cocoon.environment.Request;
-import org.apache.log4j.Logger;
-import org.dspace.authenticate.AuthenticationManager;
-import org.dspace.core.ConfigurationManager;
-import org.dspace.core.Context;
+import java.sql.SQLException;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import java.sql.SQLException;
-import java.util.Map;
+
+import org.apache.cocoon.environment.ObjectModelHelper;
+import org.apache.cocoon.environment.Request;
+import org.apache.log4j.Logger;
+import org.dspace.app.util.Util;
+import org.dspace.authenticate.AuthenticationManager;
+import org.dspace.core.ConfigurationManager;
+import org.dspace.core.Context;
 
 /**
  * Miscellaneous UI utility methods methods for managing DSpace context.
@@ -80,7 +82,7 @@ public class ContextUtil
      */
     public static Context obtainContext(HttpServletRequest request) throws SQLException
     {
-        Context context = retrieveContext(request);
+        Context context = (Context) request.getAttribute(DSPACE_CONTEXT);
 
         if (context == null)
         {
@@ -104,14 +106,13 @@ public class ContextUtil
 
             // DATASHARE - start
             // Set the session ID and IP address
-            //String ip = Util.getIPAddress(request);
-            String ip = request.getRemoteAddr();
+            String ip = Util.getIPAddress(request);
+            //String ip = request.getRemoteAddr();
             if (useProxies == null) {
                 useProxies = ConfigurationManager.getBooleanProperty("useProxies", false);
             }
             if(useProxies && request.getHeader("X-Forwarded-For") != null)
             {
-                /* This header is a comma delimited list */
 	            for(String xfip : request.getHeader("X-Forwarded-For").split(","))
                 {
                     if(!request.getHeader("X-Forwarded-For").contains(ip))
@@ -119,7 +120,7 @@ public class ContextUtil
                         ip = xfip.trim();
                     }
                 }
-            }
+	        }
             // DATASHARE - end
             
             context.setExtraLogInfo("session_id=" + request.getSession().getId() + ":ip_addr=" + ip);
@@ -140,7 +141,7 @@ public class ContextUtil
      */
     public static void completeContext(HttpServletRequest request) throws ServletException
     {
-        Context context = retrieveContext(request);
+    	Context context = (Context) request.getAttribute(DSPACE_CONTEXT);
 
     	if (context != null && context.isValid())
     	{
@@ -157,16 +158,12 @@ public class ContextUtil
 
 	public static void abortContext(HttpServletRequest request)
 	{
-        Context context = retrieveContext(request);
+    	Context context = (Context) request.getAttribute(DSPACE_CONTEXT);
 
     	if (context != null && context.isValid())
     	{
    			context.abort();
     	}
-	}
-
-    private static Context retrieveContext(final HttpServletRequest request) {
-        return (Context) request.getAttribute(DSPACE_CONTEXT);
 	}
 
 }
