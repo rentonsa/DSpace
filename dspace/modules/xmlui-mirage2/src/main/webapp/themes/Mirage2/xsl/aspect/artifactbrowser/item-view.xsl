@@ -134,6 +134,8 @@
                     <xsl:if test="$ds_item_view_toggle_url != ''">
                         <xsl:call-template name="itemSummaryView-show-full"/>
                     </xsl:if>
+
+                    <xsl:call-template name="itemSummaryView-altmetric-badge"/>
                 </div>
                 <div class="col-sm-8">
                   <xsl:call-template name="itemSummaryView-DIM-citation"/>
@@ -971,6 +973,26 @@
         <!--Lookup the MIME Type's key in messages.xml language file.  If not found, just display MIME Type-->
         <i18n:text i18n:key="{$mimetype-key}"><xsl:value-of select="$mimetype"/></i18n:text>
     </xsl:template>
+
+    <!-- DATASHARE - start -->
+    <xsl:template name="itemSummaryView-altmetric-badge">
+        <xsl:for-each select="dim:field[@element='identifier' and @qualifier='uri']">
+            <xsl:variable name="doi" select="./node()"></xsl:variable>
+            <xsl:if test="starts-with($doi, 'https://doi.org/')">
+               <h5 id="altimetric-badge-title">Altmetric</h5>
+               <div data-badge-popover="right"
+                    data-badge-type="donut"
+                    data-condensed="true"
+                    data-hide-no-mentions="true"
+                    class="altmetric-embed">
+                    <xsl:attribute name="data-doi"><xsl:value-of select="substring($doi,17)"/></xsl:attribute>
+               </div>
+               <br/>
+               <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
+            </xsl:if>
+        </xsl:for-each>
+    </xsl:template>
+    <!-- DATASHARE - end -->
 
 
 </xsl:stylesheet>
