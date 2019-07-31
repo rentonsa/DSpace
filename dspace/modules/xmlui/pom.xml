@@ -219,6 +219,7 @@
             <version>1.0.0</version>
             <type>jar</type>
         </dependency>
+
         <!-- DSpace XMLUI Languages -->
         <dependency>
             <groupId>org.dspace</groupId>

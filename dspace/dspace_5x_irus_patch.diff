@@ -1,0 +1,2649 @@
+diff --git a/dspace/config/launcher.xml b/dspace/config/launcher.xml
+index 931b461..faa6d33 100644
+--- a/dspace/config/launcher.xml
++++ b/dspace/config/launcher.xml
+@@ -403,4 +403,11 @@
+             <class>org.dspace.app.util.Version</class>
+         </step>
+     </command>
++    <command>
++        <name>retry-tracker</name>
++        <description>Retry all failed commits to the OpenURLTracker</description>
++        <step>
++            <class>com.atmire.statistics.export.RetryOpenUrlTracker</class>
++        </step>
++    </command>
+ </commands>
+diff --git a/dspace/config/log4j.properties b/dspace/config/log4j.properties
+index 6d67498..b67f0d3 100644
+--- a/dspace/config/log4j.properties
++++ b/dspace/config/log4j.properties
+@@ -114,3 +114,6 @@ log4j.logger.org.dspace.services=ERROR
+ log4j.logger.org.dspace.servicemanager=ERROR
+ log4j.logger.org.dspace.providers=ERROR
+ log4j.logger.org.dspace.utils=ERROR
++
++
++log4j.logger.com.atmire.statistics.export.ExportUsageEventListener=DEBUG
+\ No newline at end of file
+diff --git a/dspace/config/modules/stats.cfg b/dspace/config/modules/stats.cfg
+new file mode 100644
+index 0000000..504ff75
+--- /dev/null
++++ b/dspace/config/modules/stats.cfg
+@@ -0,0 +1,35 @@
++
++
++#-----------------------#
++# Atmire stats exporter #
++#-----------------------#
++
++# OPTIONAL metadata field used for filtering.
++# If items with specific values for the "dc.type" field should be excluded, "dc.type" should be placed here.
++# This should comply to the syntax schema.element.qualified or schema.element if the qualifier is null.
++# tracker.type-field = dc.type
++# If "tracker.type-field" is set, the list of values must be defined in "tracker.type-value".
++# This lists a comma separated list of values that will be excluded for the given field.
++# tracker.type-value = Article, Postprint
++
++# Set the tracker environment to "test" or "production". Defaults to "test" if empty.
++# The URL used by the test environment can be configured in property tracker.testurl
++# The URL used by the production environment can be configured in property tracker.produrl
++tracker.environment = test
++# The url used to test the submission of tracking info to.
++tracker.testurl = https://irus.jisc.ac.uk/counter/test/
++# The base url for submitting the tracking info to.
++tracker.produrl = https://irus.jisc.ac.uk/counter/
++# Identifies data as OpenURL 1.0
++tracker.urlversion = Z39.88-2004
++
++# The deployed user interface should be provided to build correct links to files.
++# The dspace.type field can be set to either "xmlui" or "jspui".
++dspace.type = xmlui
++
++# Spider options
++spider.ipmatch.enabled = true
++spider.agentempty.enabled = false
++spider.agentregex.enabled = true
++# Default is downloaded during build: ${dspace.dir}/config/COUNTER_Robots_list.txt
++spider.agentregex.regexfile = ${dspace.dir}/config/COUNTER_Robots_list.txt
+\ No newline at end of file
+diff --git a/dspace/config/spring/jspui/open-url-listeners.xml b/dspace/config/spring/jspui/open-url-listeners.xml
+new file mode 100644
+index 0000000..210208f
+--- /dev/null
++++ b/dspace/config/spring/jspui/open-url-listeners.xml
+@@ -0,0 +1,12 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<beans
++    xmlns="http://www.springframework.org/schema/beans"
++    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++    xmlns:util="http://www.springframework.org/schema/util"
++    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
++                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
++
++    <bean class="com.atmire.statistics.export.ExportUsageEventListener" lazy-init="true">
++    </bean>
++
++</beans>
+diff --git a/dspace/config/spring/xmlui/open-url-listeners.xml b/dspace/config/spring/xmlui/open-url-listeners.xml
+new file mode 100644
+index 0000000..210208f
+--- /dev/null
++++ b/dspace/config/spring/xmlui/open-url-listeners.xml
+@@ -0,0 +1,12 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<beans
++    xmlns="http://www.springframework.org/schema/beans"
++    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++    xmlns:util="http://www.springframework.org/schema/util"
++    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
++                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
++
++    <bean class="com.atmire.statistics.export.ExportUsageEventListener" lazy-init="true">
++    </bean>
++
++</beans>
+diff --git a/dspace/modules/additions/pom.xml b/dspace/modules/additions/pom.xml
+index ff7c55f..8fe8bd4 100644
+--- a/dspace/modules/additions/pom.xml
++++ b/dspace/modules/additions/pom.xml
+@@ -72,6 +72,13 @@
+    Runtime and Compile Time dependencies for DSpace.
+    -->
+    <dependencies>
++      <dependency>
++         <groupId>com.atmire</groupId>
++         <artifactId>atmire-statistics-exporter-api</artifactId>
++         <version>1.0.0</version>
++         <type>jar</type>
++      </dependency>
++
+       <dependency>
+          <groupId>org.dspace</groupId>
+          <artifactId>dspace-api</artifactId>
+diff --git a/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/pom.xml b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/pom.xml
+new file mode 100644
+index 0000000..d4851a8
+--- /dev/null
++++ b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/pom.xml
+@@ -0,0 +1,34 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project xmlns="http://maven.apache.org/POM/4.0.0"
++         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
++    <modelVersion>4.0.0</modelVersion>
++
++    <parent>
++        <groupId>com.atmire</groupId>
++        <artifactId>atmire-statistics-exporter</artifactId>
++        <version>1.0.0</version>
++    </parent>
++
++    <groupId>com.atmire</groupId>
++    <artifactId>atmire-statistics-exporter-api</artifactId>
++    <version>1.0.0</version>
++    <packaging>jar</packaging>
++    <name>Atmire statistics exporter API</name>
++    <url>atmire.com</url>
++
++    <dependencies>
++        <dependency>
++            <groupId>org.dspace</groupId>
++            <artifactId>dspace-api</artifactId>
++
++        </dependency>
++
++        <dependency>
++            <groupId>javax.servlet</groupId>
++            <artifactId>servlet-api</artifactId>
++            <version>2.3</version>
++            <scope>provided</scope>
++        </dependency>
++    </dependencies>
++</project>
+diff --git a/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/com/atmire/statistics/export/ExportUsageEventListener.java b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/com/atmire/statistics/export/ExportUsageEventListener.java
+new file mode 100644
+index 0000000..10f7690
+--- /dev/null
++++ b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/com/atmire/statistics/export/ExportUsageEventListener.java
+@@ -0,0 +1,403 @@
++/*
++ * ExportUsageEventListener.java
++ *
++ * Version: $Revision: 1 $
++ * Date: $Date: 2010-04-09 11:01:28 +0200 (vr, 09 apr 2010) $
++ * Copyright (c) @mire.  All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are
++ * met:
++ * - Redistributions of source code must retain the above copyright
++ * notice, this list of conditions and the following disclaimer.
++ * - Redistributions in binary form must reproduce the above copyright
++ * notice, this list of conditions and the following disclaimer in the
++ * documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
++ * HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
++ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
++ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
++ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
++ * DAMAGE.
++ */
++package com.atmire.statistics.export;
++
++import java.io.BufferedReader;
++import java.io.IOException;
++import java.io.InputStreamReader;
++import java.io.UnsupportedEncodingException;
++import java.net.HttpURLConnection;
++import java.net.URL;
++import java.net.URLConnection;
++import java.net.URLEncoder;
++import java.sql.SQLException;
++import java.util.ArrayList;
++import java.util.Date;
++import java.util.List;
++import javax.servlet.http.HttpServletRequest;
++
++import org.apache.commons.lang.StringUtils;
++import org.apache.log4j.Logger;
++import org.dspace.app.util.Util;
++import org.dspace.content.Bitstream;
++import org.dspace.content.Bundle;
++import org.dspace.content.DCDate;
++import org.dspace.content.Item;
++import org.dspace.content.Metadatum;
++import org.dspace.core.ConfigurationManager;
++import org.dspace.core.Context;
++import org.dspace.core.LogManager;
++import org.dspace.services.model.Event;
++import org.dspace.statistics.util.SpiderDetector;
++import org.dspace.usage.AbstractUsageEventListener;
++import org.dspace.usage.UsageEvent;
++
++/**
++ * User: kevin (kevin at atmire.com)
++ * Date: 30-mrt-2010
++ * Time: 16:37:56
++ */
++public class ExportUsageEventListener extends AbstractUsageEventListener {
++    /*  Log4j logger*/
++    private static Logger log = Logger.getLogger(ExportUsageEventListener.class);
++
++    /* The metadata field which is to be checked for */
++    private static Metadatum trackerType;
++
++
++    /* A list of values the type might have */
++    private static List<String> trackerValues;
++
++    /* The base url of the tracker */
++    private static String baseUrl;
++
++    private static String trackerUrlVersion;
++
++    private static final String ITEM_VIEW = "Investigation";
++    private static final String BITSTREAM_DOWNLOAD = "Request";
++
++
++    public void init() {
++        try {
++            if (trackerType == null) {
++                trackerType = resolveConfigPropertyToMetadataField("tracker.type-field");
++
++                String metadataValues = ConfigurationManager.getProperty("stats", "tracker.type-value");
++                if (metadataValues != null && 0 < metadataValues.trim().length()) {
++                    trackerValues = new ArrayList<String>();
++                    if (metadataValues.contains(",")) {
++                        //We have more then one value
++                        String[] values = metadataValues.split(",");
++                        //We add all the values withouth spaces & lowercase so we don't have to worry about the cases.
++                        for (String val : values)
++                            trackerValues.add(val.trim().toLowerCase());
++                    } else {
++                        trackerValues.add(metadataValues.trim().toLowerCase());
++                    }
++                } else
++                    trackerValues = null;
++
++                if(StringUtils.equals(ConfigurationManager.getProperty("stats","tracker.environment"), "production")){
++                    baseUrl = ConfigurationManager.getProperty("stats", "tracker.produrl");
++                }
++                else {
++                    baseUrl = ConfigurationManager.getProperty("stats", "tracker.testurl");
++                }
++
++                trackerUrlVersion = ConfigurationManager.getProperty("stats", "tracker.urlversion");
++
++
++            }
++        } catch (Exception e) {
++            log.error("Unknown error resolving configuration for the export usage event.", e);
++            trackerType = null;
++            trackerValues = null;
++            baseUrl = null;
++            trackerUrlVersion = null;
++        }
++    }
++
++    public void receiveEvent(Event event) {
++        if (event instanceof UsageEvent) {
++            UsageEvent ue = (UsageEvent) event;
++            try {
++                //Check for item investigation
++                if (ue.getObject() instanceof Item) {
++                    Item item = (Item) ue.getObject();
++                    if (item.isArchived() && !item.canEdit()) {
++                        init();
++                        if (shouldProcessItem(item)) {
++                            processItem(ue.getContext(), item, null, ue.getRequest(), ITEM_VIEW);
++                        }
++                    }
++                }
++                //Check for bitstream download
++                if (ue.getObject() instanceof Bitstream) {
++                    Bitstream bit = (Bitstream) ue.getObject();
++                    //Check for an item
++                    if (0 < bit.getBundles().length) {
++                        if (!SpiderDetector.isSpider(ue.getRequest())) {
++                            Bundle bundle = bit.getBundles()[0];
++                            if (bundle.getName() == null || !bundle.getName().equals("ORIGINAL"))
++                                return;
++
++                            if (0 < bundle.getItems().length) {
++                                Item item = bundle.getItems()[0];
++                                if(item.isArchived() && !item.canEdit()) {
++                                    //Check if we have a valid type of item !
++                                    init();
++                                    if (shouldProcessItem(item)) {
++                                        processItem(ue.getContext(), item, bit, ue.getRequest(), BITSTREAM_DOWNLOAD);
++                                    }
++                                }
++                            }
++                        } else {
++                            log.info("Robot (" + ue.getRequest().getHeader("user-agent") + ") accessed  " + bit.getName() + "/" + bit.getSource());
++                        }
++                    }
++                }
++            } catch (Exception e) {
++                int id;
++                try {
++                    id = ue.getObject().getID();
++                } catch (Exception e1) {
++                    id = -1;
++                }
++                int type;
++                try {
++                    type = ue.getObject().getType();
++                } catch (Exception e1) {
++                    type = -1;
++                }
++                log.error(LogManager.getHeader(ue.getContext(), "Error while processing export of use event", "Id: " + id + " type: " + type), e);
++                e.printStackTrace();
++            }
++        }
++    }
++
++    private boolean shouldProcessItem(final Item item) {
++        if (trackerType != null && trackerValues != null) {
++            Metadatum[] types = item
++                    .getMetadata(trackerType.schema, trackerType.element, trackerType.qualifier, Item.ANY);
++            if (types.length > 0) {
++                //Find out if we have a type that needs to be excluded
++                for (Metadatum type : types) {
++                    if (trackerValues.contains(type.value.toLowerCase())) {
++                        //We have found no type so process this item
++                        return false;
++                    }
++                }
++                return true;
++            } else {
++                // No types in this item, so not excluded
++                return true;
++            }
++        } else {
++            // No types to be excluded
++            return true;
++        }
++    }
++
++    private void processItem(Context context, Item item, Bitstream bitstream, HttpServletRequest request, String eventType) throws IOException, SQLException {
++        //We have a valid url collect the rest of the data
++        String clientIP = request.getRemoteAddr();
++        if (ConfigurationManager.getBooleanProperty("useProxies", false) && request.getHeader("X-Forwarded-For") != null) {
++            /* This header is a comma delimited list */
++            for (String xfip : request.getHeader("X-Forwarded-For").split(",")) {
++                /* proxy itself will sometime populate this header with the same value in
++                    remote address. ordering in spec is vague, we'll just take the last
++                    not equal to the proxy
++                */
++                if (!request.getHeader("X-Forwarded-For").contains(clientIP)) {
++                    clientIP = xfip.trim();
++                }
++            }
++        }
++        String clientUA = StringUtils.defaultIfBlank(request.getHeader("USER-AGENT"), "");
++        String referer = StringUtils.defaultIfBlank(request.getHeader("referer"), "");
++
++        //Start adding our data
++        StringBuilder data = new StringBuilder();
++        data.append(URLEncoder.encode("url_ver", "UTF-8") + "=" + URLEncoder.encode(trackerUrlVersion, "UTF-8"));
++        data.append("&").append(URLEncoder.encode("req_id", "UTF-8")).append("=").append( URLEncoder.encode(clientIP, "UTF-8"));
++        data.append("&").append(URLEncoder.encode("req_dat", "UTF-8")).append("=").append( URLEncoder.encode(clientUA, "UTF-8"));
++        data.append("&").append(URLEncoder.encode("rft.artnum", "UTF-8")).append("=").append( URLEncoder.encode("oai:" + ConfigurationManager.getProperty("dspace.hostname") + ":" + item.getHandle(), "UTF-8"));
++        data.append("&").append(URLEncoder.encode("rfr_dat", "UTF-8")).append("=").append( URLEncoder.encode(referer, "UTF-8"));
++        data.append("&").append(URLEncoder.encode("rfr_id", "UTF-8")).append("=").append( URLEncoder.encode(ConfigurationManager.getProperty("dspace.hostname"), "UTF-8"));
++        data.append("&").append(URLEncoder.encode("url_tim", "UTF-8")).append("=").append( URLEncoder.encode(new DCDate(new Date()).toString(), "UTF-8"));
++
++        if (BITSTREAM_DOWNLOAD.equals(eventType)) {
++            String bitstreamInfo = getBitstreamInfo(item, bitstream);
++            data.append("&").append( URLEncoder.encode("svc_dat", "UTF-8")).append("=").append( URLEncoder.encode(bitstreamInfo, "UTF-8"));
++            data.append("&").append( URLEncoder.encode("rft_dat", "UTF-8")).append("=").append( URLEncoder.encode(BITSTREAM_DOWNLOAD, "UTF-8"));
++        } else if (ITEM_VIEW.equals(eventType)) {
++            String itemInfo = getItemInfo(item);
++            data.append("&").append( URLEncoder.encode("svc_dat", "UTF-8")).append("=").append( URLEncoder.encode(itemInfo, "UTF-8"));
++            data.append("&").append( URLEncoder.encode("rft_dat", "UTF-8")).append("=").append( URLEncoder.encode(ITEM_VIEW, "UTF-8"));
++        }
++
++        processUrl(context, baseUrl + "?" + data.toString());
++
++    }
++
++    private String getBitstreamInfo(final Item item, final Bitstream bitstream) {
++        //only for jsp ui
++        // http://demo.dspace.org/jspui/handle/10673/2235
++        // http://demo.dspace.org/jspui/bitstream/10673/2235/1/Captura.JPG
++        //
++
++
++        //only fror xmlui
++        // http://demo.dspace.org/xmlui/handle/10673/2235
++        // http://demo.dspace.org/xmlui/bitstream/handle/10673/2235/Captura.JPG?sequence=1
++        //
++
++        String uiType = ConfigurationManager.getProperty("stats", "dspace.type");
++        StringBuilder sb = new StringBuilder(ConfigurationManager.getProperty("dspace.url"));
++        if ("jspui".equals(uiType)) {
++
++            sb.append("/bitstream/").append(item.getHandle()).append("/").append(bitstream.getSequenceID());
++
++            // If we can, append the pretty name of the bitstream to the URL
++            try {
++                if (bitstream.getName() != null) {
++                    sb.append("/").append(Util.encodeBitstreamName(bitstream.getName(), "UTF-8"));
++                }
++            } catch (UnsupportedEncodingException uee) {
++                // just ignore it, we don't have to have a pretty
++                // name at the end of the URL because the sequence id will
++                // locate it. However it means that links in this file might
++                // not work....
++            }
++        } else { //xmlui
++
++            String identifier = null;
++            if (item != null && item.getHandle() != null) {
++                identifier = "handle/" + item.getHandle();
++            } else if (item != null) {
++                identifier = "item/" + item.getID();
++            } else {
++                identifier = "id/" + bitstream.getID();
++            }
++
++
++            sb.append("/bitstream/").append(identifier).append("/");
++
++            // If we can, append the pretty name of the bitstream to the URL
++            try {
++                if (bitstream.getName() != null) {
++                    sb.append(Util.encodeBitstreamName(bitstream.getName(), "UTF-8"));
++                }
++            } catch (UnsupportedEncodingException uee) {
++                // just ignore it, we don't have to have a pretty
++                // name at the end of the URL because the sequence id will
++                // locate it. However it means that links in this file might
++                // not work....
++            }
++
++            sb.append("?sequence=").append(bitstream.getSequenceID());
++        }
++        return sb.toString();
++    }
++
++    private String getItemInfo(final Item item) {
++        StringBuilder sb = new StringBuilder(ConfigurationManager.getProperty("dspace.url"));
++        sb.append("/handle/").append(item.getHandle());
++
++        return sb.toString();
++    }
++
++
++    private static void processUrl(Context c, String urlStr) throws IOException, SQLException {
++        log.debug("Prepared to send url to tracker URL: " + urlStr);
++        System.out.println(urlStr);
++        URLConnection conn;
++
++        try {
++            // Send data
++            URL url = new URL(urlStr);
++            conn = url.openConnection();
++
++            // Get the response
++            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
++            while (rd.readLine() != null) ;
++
++            rd.close();
++            if (((HttpURLConnection) conn).getResponseCode() != 200) {
++                ExportUsageEventListener.logfailed(c, urlStr);
++            } else if (log.isDebugEnabled()) {
++                log.debug("Successfully posted " + urlStr + " on " + new Date());
++            }
++        } catch (Exception e) {
++            log.error("Failed to send url to tracker URL: " + urlStr);
++            ExportUsageEventListener.logfailed(c, urlStr);
++        }
++    }
++
++    private static void tryReprocessFailed(OpenUrlTrackerLogger tracker) throws SQLException {
++        boolean success = false;
++        URLConnection conn;
++        try {
++            URL url = new URL(tracker.getUrl());
++            conn = url.openConnection();
++            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
++            while (rd.readLine() != null) ;
++            rd.close();
++            if (((HttpURLConnection) conn).getResponseCode() == 200) {
++                success = true;
++            }
++        } catch (Exception e) {
++            success = false;
++        } finally {
++            if (success) {
++                // If the tracker was able to post successfully, we remove it from the database
++                tracker.delete();
++                log.info("Successfully posted " + tracker.getUrl() + " from " + tracker.getUploaddate());
++            } else {
++                // Still no luck - write an error msg but keep the entry in the table for future executions
++                log.error("Failed attempt from " + tracker.getUrl() + " originating from " + tracker.getUploaddate());
++            }
++        }
++    }
++
++    public static void reprocessFailedQueue() throws SQLException {
++        Context c = new Context();
++        OpenUrlTrackerLogger[] trackerLoggers = OpenUrlTrackerLogger.findAll(c);
++        for (OpenUrlTrackerLogger openUrlTrackerLogger : trackerLoggers) {
++            ExportUsageEventListener.tryReprocessFailed(openUrlTrackerLogger);
++        }
++        try {
++            c.abort();
++        } catch (Exception ignored) {
++        }
++    }
++
++    public static void logfailed(Context context, String url) throws SQLException {
++        Date now = new Date();
++        if (url.equals("")) return;
++        OpenUrlTrackerLogger tracker = OpenUrlTrackerLogger.create(context);
++        tracker.setUploaddate(now);
++        tracker.setUrl(url);
++        tracker.update();
++    }
++
++    private static Metadatum resolveConfigPropertyToMetadataField(String fieldName) {
++        String metadataField = ConfigurationManager.getProperty("stats", fieldName);
++        if (metadataField != null && 0 < metadataField.trim().length()) {
++            metadataField = metadataField.trim();
++            Metadatum dcVal = new Metadatum();
++            dcVal.schema = metadataField.split("\\.")[0];
++            dcVal.element = metadataField.split("\\.")[1];
++            dcVal.qualifier = metadataField.split("\\.").length == 2 ? null : metadataField.split("\\.")[2];
++            return dcVal;
++        }
++        return null;
++    }
++}
+diff --git a/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/com/atmire/statistics/export/OpenUrlTrackerLogger.java b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/com/atmire/statistics/export/OpenUrlTrackerLogger.java
+new file mode 100644
+index 0000000..6458b2e
+--- /dev/null
++++ b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/com/atmire/statistics/export/OpenUrlTrackerLogger.java
+@@ -0,0 +1,141 @@
++package com.atmire.statistics.export;
++
++import org.apache.log4j.Logger;
++import org.dspace.core.Context;
++import org.dspace.storage.rdbms.DatabaseManager;
++import org.dspace.storage.rdbms.TableRow;
++import org.dspace.storage.rdbms.TableRowIterator;
++
++import java.sql.SQLException;
++import java.util.List;
++
++/**
++ * Created by IntelliJ IDEA.
++ * Date: 24/04/12
++ * Time: 15:02
++ *
++ * @author: Kevin Van Ransbeeck (kevin van ransbeeck @ atmire dot com)
++ */
++public class OpenUrlTrackerLogger {
++    /**
++     * Our context
++     */
++    private Context myContext;
++    /**
++     * The row in the table representing this eperson
++     */
++    private TableRow myRow;
++    /**
++     * log4j logger
++     */
++    private static Logger log = Logger.getLogger(OpenUrlTrackerLogger.class);
++
++    public OpenUrlTrackerLogger(Context context, TableRow row) {
++        myContext = context;
++        myRow = row;
++        context.cache(this, row.getIntColumn("tracker_id"));
++        try {
++            myContext.commit();
++        } catch (SQLException ignored) {
++        }
++
++    }
++
++    public static OpenUrlTrackerLogger find(Context context, int id) throws SQLException {
++        OpenUrlTrackerLogger fromCache = (OpenUrlTrackerLogger) context.fromCache(OpenUrlTrackerLogger.class, id);
++        if (fromCache != null) {
++            return fromCache;
++        }
++        TableRow row = DatabaseManager.find(context, "openurltracker", id);
++        if (row == null)
++            return null;
++        else
++            return new OpenUrlTrackerLogger(context, row);
++    }
++
++    public static OpenUrlTrackerLogger create(Context context) throws SQLException {
++        TableRow row = DatabaseManager.create(context, "openurltracker");
++        log.info("Created new OpenUrlTrackerLogger");
++        return new OpenUrlTrackerLogger(context, row);
++    }
++
++    public void delete() throws SQLException {
++        myContext.removeCached(this, getID());
++        DatabaseManager.delete(myContext, myRow);
++        myContext.commit();
++    }
++
++    public int getID() {
++        return myRow.getIntColumn("tracker_id");
++    }
++
++    public void update() throws SQLException {
++        DatabaseManager.update(myContext, myRow);
++        myContext.commit();
++    }
++
++    public void setUrl(String url) {
++        myRow.setColumn("tracker_url", url);
++    }
++
++    public void setUploaddate(java.util.Date d) {
++        myRow.setColumn("uploaddate", d);
++    }
++
++    public String getUrl() {
++        return myRow.getStringColumn("tracker_url");
++    }
++
++    public java.util.Date getUploaddate() {
++        return myRow.getDateColumn("uploaddate");
++    }
++
++    public static OpenUrlTrackerLogger[] findAll(Context c) throws SQLException {
++        TableRowIterator rows = DatabaseManager.queryTable(c, "openurltracker", "SELECT * FROM openurltracker");
++        try {
++            List<TableRow> trackerList = rows.toList();
++            OpenUrlTrackerLogger[] trackers = new OpenUrlTrackerLogger[trackerList.size()];
++
++            for (int i = 0; i < trackerList.size(); i++) {
++                TableRow row = trackerList.get(i);
++                OpenUrlTrackerLogger fromCache =
++                        (OpenUrlTrackerLogger) c.fromCache(OpenUrlTrackerLogger.class,
++                                row.getIntColumn("tracker_id"));
++                if (fromCache != null) {
++                    trackers[i] = fromCache;
++                } else {
++                    trackers[i] = new OpenUrlTrackerLogger(c, row);
++                }
++            }
++            return trackers;
++        } finally {
++            if (rows != null) {
++                rows.close();
++            }
++        }
++    }
++
++    @Override
++    public boolean equals(Object o) {
++        if (this == o) return true;
++        if (!(o instanceof OpenUrlTrackerLogger)) return false;
++
++        OpenUrlTrackerLogger that = (OpenUrlTrackerLogger) o;
++
++        return !(myContext != null ? !myContext.equals(that.myContext) : that.myContext != null) &&
++                !(myRow != null ? !myRow.equals(that.myRow) : that.myRow != null);
++
++    }
++
++    @Override
++    public int hashCode() {
++        int result = myContext != null ? myContext.hashCode() : 0;
++        result = 31 * result + (myRow != null ? myRow.hashCode() : 0);
++        return result;
++    }
++
++    @Override
++    public String toString() {
++        return "OpenUrlTrackerLogger on " + getUploaddate() + " for URL: " + getUrl() + " #" + getID() + "#";
++    }
++}
+diff --git a/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/com/atmire/statistics/export/RetryOpenUrlTracker.java b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/com/atmire/statistics/export/RetryOpenUrlTracker.java
+new file mode 100644
+index 0000000..9e9526b
+--- /dev/null
++++ b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/com/atmire/statistics/export/RetryOpenUrlTracker.java
+@@ -0,0 +1,62 @@
++package com.atmire.statistics.export;
++
++import org.apache.commons.cli.*;
++import org.apache.log4j.Logger;
++import org.dspace.core.Context;
++
++import java.sql.SQLException;
++
++/**
++ * Created by IntelliJ IDEA.
++ * Date: 25/04/12
++ * Time: 09:32
++ *
++ * @author: Kevin Van Ransbeeck (kevin van ransbeeck @ atmire dot com)
++ */
++public class RetryOpenUrlTracker {
++    private static final Logger log = Logger.getLogger(RetryOpenUrlTracker.class);
++
++    /* Command Line execution */
++    public static void main(String[] args) throws SQLException {
++        Context context = new Context();
++        context.setIgnoreAuthorization(true);
++
++        String usage = "com.atmire.statistics.export.RetryOpenUrlTracker [-a <URL>]] or nothing to retry all failed attempts.";
++        Options options = new Options();
++        HelpFormatter formatter = new HelpFormatter();
++        CommandLine line = null;
++
++        OptionBuilder.withArgName("Open URL Tracker");
++        OptionBuilder.hasArg(true);
++        OptionBuilder.withDescription("Add a new row to the table (test purposes only)");
++        options.addOption(OptionBuilder.create("a"));
++        OptionBuilder.isRequired(false);
++        OptionBuilder.withDescription("print this help message");
++        options.addOption(OptionBuilder.create("h"));
++
++        try {
++            line = new PosixParser().parse(options, args);
++        } catch (Exception e) {
++            // automatically generate the help statement
++            formatter.printHelp(usage, e.getMessage(), options, "");
++            System.exit(1);
++        }
++        if (line.hasOption("h")) {
++            // automatically generate the help statement
++            formatter.printHelp(usage, options);
++            System.exit(1);
++        }
++
++        if (line.hasOption("a")) {
++            ExportUsageEventListener.logfailed(context, line.getOptionValue("a"));
++            log.info("Created dummy entry in OpenUrlTracker with URL: " + line.getOptionValue("a"));
++        } else {
++            ExportUsageEventListener.reprocessFailedQueue();
++        }
++
++        try {
++            context.complete();
++        } catch (Exception ignored) {
++        }
++    }
++}
+diff --git a/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/org/dspace/core/ConfigurationManager.java b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/org/dspace/core/ConfigurationManager.java
+new file mode 100644
+index 0000000..116313c
+--- /dev/null
++++ b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/org/dspace/core/ConfigurationManager.java
+@@ -0,0 +1,1024 @@
++/**
++ * The contents of this file are subject to the license and copyright
++ * detailed in the LICENSE and NOTICE files at the root of the source
++ * tree and available online at
++ *
++ * http://www.dspace.org/license/
++ */
++package org.dspace.core;
++
++import org.apache.log4j.Category;
++import org.apache.log4j.Logger;
++import org.apache.log4j.helpers.OptionConverter;
++
++import java.io.*;
++import java.net.MalformedURLException;
++import java.net.URL;
++import java.util.Enumeration;
++import java.util.HashMap;
++import java.util.Map;
++import java.util.Properties;
++
++/**
++ * Class for reading the DSpace system configuration. The main configuration is
++ * read in as properties from a standard properties file. Email templates and
++ * configuration files for other tools are also be accessed via this class.
++ * <P>
++ * The main configuration is by default read from the <em>resource</em>
++ * <code>/dspace.cfg</code>.
++ * To specify a different configuration, the system property
++ * <code>dspace.configuration</code> should be set to the <em>filename</em>
++ * of the configuration file.
++ * <P>
++ * Other configuration files are read from the <code>config</code> directory
++ * of the DSpace installation directory (specified as the property
++ * <code>dspace.dir</code> in the main configuration file.)
++ *
++ *
++ * @author Robert Tansley
++ * @author Larry Stone - Interpolated values.
++ * @author Mark Diggory - General Improvements to detection, logging and loading.
++ * @version $Revision$
++ */
++public class ConfigurationManager
++{
++    /** log4j category */
++    private static Logger log = Logger.getLogger(ConfigurationManager.class);
++
++    /** The configuration properties */
++    private static Properties properties = null;
++
++    /** module configuration properties */
++    private static Map<String, Properties> moduleProps = new HashMap<String, Properties>();
++
++    // limit of recursive depth of property variable interpolation in
++    // configuration; anything greater than this is very likely to be a loop.
++    private static final int RECURSION_LIMIT = 9;
++
++    protected ConfigurationManager()
++    {
++
++    }
++
++    /**
++     * Identify if DSpace is properly configured
++     * @return boolean true if configured, false otherwise
++     */
++    public static boolean isConfigured()
++    {
++        return properties != null;
++    }
++
++    public static boolean isConfigured(String module)
++    {
++        return moduleProps.get(module) != null;
++    }
++
++    /**
++     * REMOVED - Flushing the properties could be dangerous in the current DSpace state
++     * Need to consider how it will affect in-flight processes
++     *
++     * Discard all current properties - will force a reload from disk when
++     * any properties are requested.
++     */
++//    public static void flush()
++//    {
++//        properties = null;
++//    }
++
++    /**
++     * REMOVED - Flushing the properties could be dangerous in the current DSpace state
++     * Need to consider how it will affect in-flight processes
++     *
++     * Discard properties for a module -  will force a reload from disk
++     * when any of module's properties are requested
++     *
++     * @param module the module name
++     */
++//    public static void flush(String module)
++//    {
++//        moduleProps.remove(module);
++//    }
++
++    /**
++     * Returns all properties in main configuration
++     *
++     * @return properties - all non-modular properties
++     */
++    public static Properties getProperties()
++    {
++        Properties props = getMutableProperties();
++        return props == null ? null : (Properties)props.clone();
++    }
++
++    private static Properties getMutableProperties()
++    {
++        if (properties == null)
++        {
++            loadConfig(null);
++        }
++
++        return properties;
++    }
++
++    /**
++     * Returns all properties for a given module
++     *
++     * @param module
++     *        the name of the module
++     * @return properties - all module's properties
++     */
++    public static Properties getProperties(String module)
++    {
++        Properties props = getMutableProperties(module);
++        return props == null ? null : (Properties)props.clone();
++    }
++
++    private static Properties getMutableProperties(String module)
++    {
++        if (module == null)
++            return properties;
++
++        if (moduleProps == null)
++        {
++            loadConfig(null);
++        }
++        Properties retProps = moduleProps.get(module);
++        if (retProps == null)
++        {
++            loadModuleConfig(module);
++            retProps = moduleProps.get(module);
++        }
++
++        return retProps;
++    }
++
++    /**
++     * Get a configuration property
++     *
++     * @param property
++     *            the name of the property
++     *
++     * @return the value of the property, or <code>null</code> if the property
++     *         does not exist.
++     */
++    public static String getProperty(String property)
++    {
++        Properties props = getMutableProperties();
++        String value = props == null ? null : props.getProperty(property);
++        return (value != null) ? value.trim() : null;
++    }
++
++    /**
++     * Get a module configuration property value.
++     *
++     * @param module
++     *      the name of the module, or <code>null</code> for regular configuration
++     *      property
++     * @param property
++     *      the name (key) of the property
++     * @return
++     *      the value of the property, or <code>null</code> if the
++     *      property does not exist
++     */
++    public static String getProperty(String module, String property)
++    {
++        if (module == null)
++        {
++            return getProperty(property);
++        }
++
++        String value = null;
++        Properties modProps = getMutableProperties(module);
++
++        if (modProps != null)
++        {
++            value = modProps.getProperty(property);
++        }
++
++        if (value == null)
++        {
++            // look in regular properties with module name prepended
++            value = getProperty(module + "." + property);
++        }
++
++        return (value != null) ? value.trim() : null;
++    }
++
++    /**
++     * Get a configuration property as an integer
++     *
++     * @param property
++     *            the name of the property
++     *
++     * @return the value of the property. <code>0</code> is returned if the
++     *         property does not exist. To differentiate between this case and
++     *         when the property actually is zero, use <code>getProperty</code>.
++     */
++    public static int getIntProperty(String property)
++    {
++        return getIntProperty(property, 0);
++    }
++
++    /**
++     * Get a module configuration property as an integer
++     *
++     * @param module
++     *         the name of the module
++     *
++     * @param property
++     *            the name of the property
++     *
++     * @return the value of the property. <code>0</code> is returned if the
++     *         property does not exist. To differentiate between this case and
++     *         when the property actually is zero, use <code>getProperty</code>.
++     */
++    public static int getIntProperty(String module, String property)
++    {
++        return getIntProperty(module, property, 0);
++    }
++
++    /**
++     * Get a configuration property as an integer, with default
++     *
++     * @param property
++     *            the name of the property
++     *
++     * @param defaultValue
++     *            value to return if property is not found or is not an Integer.
++     *
++     * @return the value of the property. <code>default</code> is returned if
++     *         the property does not exist or is not an Integer. To differentiate between this case
++     *         and when the property actually is false, use
++     *         <code>getProperty</code>.
++     */
++    public static int getIntProperty(String property, int defaultValue)
++    {
++        return getIntProperty(null, property, defaultValue);
++    }
++
++    /**
++     * Get a module configuration property as an integer, with default
++     *
++     * @param module
++     *         the name of the module
++     *
++     * @param property
++     *            the name of the property
++     *
++     * @param defaultValue
++     *            value to return if property is not found or is not an Integer.
++     *
++     * @return the value of the property. <code>default</code> is returned if
++     *         the property does not exist or is not an Integer. To differentiate between this case
++     *         and when the property actually is false, use
++     *         <code>getProperty</code>.
++     */
++    public static int getIntProperty(String module, String property, int defaultValue)
++    {
++       String stringValue = getProperty(module, property);
++       int intValue = defaultValue;
++
++       if (stringValue != null)
++       {
++           try
++           {
++               intValue = Integer.parseInt(stringValue.trim());
++           }
++           catch (NumberFormatException e)
++           {
++               warn("Warning: Number format error in property: " + property);
++           }
++        }
++
++        return intValue;
++    }
++
++    /**
++     * Get a configuration property as a long
++     *
++     * @param property
++     *            the name of the property
++     *
++     * @return the value of the property. <code>0</code> is returned if the
++     *         property does not exist. To differentiate between this case and
++     *         when the property actually is zero, use <code>getProperty</code>.
++     */
++    public static long getLongProperty(String property)
++    {
++        return getLongProperty(property, 0);
++    }
++
++    /**
++     * Get a module configuration property as a long
++     *
++     * @param module
++     *         the name of the module
++     * @param property
++     *            the name of the property
++     *
++     * @return the value of the property. <code>0</code> is returned if the
++     *         property does not exist. To differentiate between this case and
++     *         when the property actually is zero, use <code>getProperty</code>.
++     */
++    public static long getLongProperty(String module, String property)
++    {
++        return getLongProperty(module, property, 0);
++    }
++
++   /**
++     * Get a configuration property as an long, with default
++     *
++     *
++     * @param property
++     *            the name of the property
++     *
++     * @param defaultValue
++     *            value to return if property is not found or is not a Long.
++     *
++     * @return the value of the property. <code>default</code> is returned if
++     *         the property does not exist or is not an Integer. To differentiate between this case
++     *         and when the property actually is false, use
++     *         <code>getProperty</code>.
++     */
++    public static long getLongProperty(String property, int defaultValue)
++    {
++        return getLongProperty(null, property, defaultValue);
++    }
++
++    /**
++     * Get a configuration property as an long, with default
++     *
++     * @param module  the module, or <code>null</code> for regular property
++     *
++     * @param property
++     *            the name of the property
++     *
++     * @param defaultValue
++     *            value to return if property is not found or is not a Long.
++     *
++     * @return the value of the property. <code>default</code> is returned if
++     *         the property does not exist or is not an Integer. To differentiate between this case
++     *         and when the property actually is false, use
++     *         <code>getProperty</code>.
++     */
++    public static long getLongProperty(String module, String property, int defaultValue)
++    {
++        String stringValue = getProperty(module, property);
++        long longValue = defaultValue;
++
++        if (stringValue != null)
++        {
++            try
++            {
++                longValue = Long.parseLong(stringValue.trim());
++            }
++            catch (NumberFormatException e)
++            {
++                warn("Warning: Number format error in property: " + property);
++            }
++        }
++
++        return longValue;
++    }
++
++    /**
++     * Get a configuration property as a boolean. True is indicated if the value
++     * of the property is <code>TRUE</code> or <code>YES</code> (case
++     * insensitive.)
++     *
++     * @param property
++     *            the name of the property
++     *
++     * @return the value of the property. <code>false</code> is returned if
++     *         the property does not exist. To differentiate between this case
++     *         and when the property actually is false, use
++     *         <code>getProperty</code>.
++     */
++    public static boolean getBooleanProperty(String property)
++    {
++        return getBooleanProperty(property, false);
++    }
++
++    /**
++     * Get a module configuration property as a boolean. True is indicated if
++     * the value of the property is <code>TRUE</code> or <code>YES</code> (case
++     * insensitive.)
++     *
++     * @param module the module, or <code>null</code> for regular property
++     *
++     * @param property
++     *            the name of the property
++     *
++     * @return the value of the property. <code>false</code> is returned if
++     *         the property does not exist. To differentiate between this case
++     *         and when the property actually is false, use
++     *         <code>getProperty</code>.
++     */
++    public static boolean getBooleanProperty(String module, String property)
++    {
++        return getBooleanProperty(module, property, false);
++    }
++
++   /**
++     * Get a configuration property as a boolean, with default.
++     * True is indicated if the value
++     * of the property is <code>TRUE</code> or <code>YES</code> (case
++     * insensitive.)
++     *
++     * @param property
++     *            the name of the property
++     *
++     * @param defaultValue
++     *            value to return if property is not found.
++     *
++     * @return the value of the property. <code>default</code> is returned if
++     *         the property does not exist. To differentiate between this case
++     *         and when the property actually is false, use
++     *         <code>getProperty</code>.
++     */
++    public static boolean getBooleanProperty(String property, boolean defaultValue)
++    {
++        return getBooleanProperty(null, property, defaultValue);
++    }
++
++    /**
++     * Get a module configuration property as a boolean, with default.
++     * True is indicated if the value
++     * of the property is <code>TRUE</code> or <code>YES</code> (case
++     * insensitive.)
++     *
++     * @param module     module, or <code>null</code> for regular property
++     *
++     * @param property
++     *            the name of the property
++     *
++     * @param defaultValue
++     *            value to return if property is not found.
++     *
++     * @return the value of the property. <code>default</code> is returned if
++     *         the property does not exist. To differentiate between this case
++     *         and when the property actually is false, use
++     *         <code>getProperty</code>.
++     */
++    public static boolean getBooleanProperty(String module, String property, boolean defaultValue)
++    {
++        String stringValue = getProperty(module, property);
++
++        if (stringValue != null)
++        {
++        	stringValue = stringValue.trim();
++            return  stringValue.equalsIgnoreCase("true") ||
++                    stringValue.equalsIgnoreCase("yes");
++        }
++        else
++        {
++            return defaultValue;
++        }
++    }
++
++    /**
++     * Returns an enumeration of all the keys in the DSpace configuration
++     *
++     * @return an enumeration of all the keys in the DSpace configuration
++     */
++    public static Enumeration<?> propertyNames()
++    {
++        return propertyNames(null);
++    }
++
++    /**
++     * Returns an enumeration of all the keys in a module configuration
++     *
++     * @param  module    module, or <code>null</code> for regular property
++     *
++     * @return an enumeration of all the keys in the module configuration,
++     *         or <code>null</code> if the module does not exist.
++     */
++    public static Enumeration<?> propertyNames(String module)
++    {
++        Properties props = getProperties(module);
++        return props == null ? null : props.propertyNames();
++    }
++
++    /** The configuration that was loaded. */
++    private static File loadedFile = null;
++
++    /**
++     * Return the file that configuration was actually loaded from.
++     *
++     * @deprecated Please remove all direct usage of the configuration file.
++     * @return File naming configuration data file.
++     */
++    protected static File getConfigurationFile()
++    {
++        // in case it hasn't been done yet.
++        if (loadedFile == null)
++        {
++            loadConfig(null);
++        }
++
++        return loadedFile;
++    }
++
++    private static synchronized void loadModuleConfig(String module)
++    {
++        // try to find it in modules
++        File modFile = null;
++        try
++        {
++            modFile = new File(getProperty("dspace.dir") +
++                                File.separator + "config" +
++                                File.separator + "modules" +
++                                File.separator + module + ".cfg");
++
++            if (modFile.exists())
++            {
++                Properties modProps = new Properties();
++                InputStream modIS = null;
++                InputStreamReader modIR = null;
++                try
++                {
++                    modIS = new FileInputStream(modFile);
++                    modIR = new InputStreamReader(modIS, "UTF-8");
++                    modProps.load(modIR);
++                }
++                finally
++                {
++                    if (modIR != null)
++                    {
++                        modIR.close();
++                    }
++
++                    if (modIS != null)
++                    {
++                        modIS.close();
++                    }
++                }
++
++                for (Enumeration pe = modProps.propertyNames(); pe.hasMoreElements(); )
++                {
++                    String key = (String)pe.nextElement();
++                    String ival = interpolate(key, modProps.getProperty(key), 1);
++                    if (ival != null)
++                    {
++                        modProps.setProperty(key, ival);
++                    }
++                }
++                moduleProps.put(module, modProps);
++            }
++            else
++            {
++                // log invalid request
++                warn("Requested configuration module: " + module + " not found");
++            }
++        }
++        catch (IOException ioE)
++        {
++            fatal("Can't load configuration: " + (modFile == null ? "<unknown>" : modFile.getAbsolutePath()), ioE);
++        }
++    }
++
++    /**
++     * Load the DSpace configuration properties. Only does anything if
++     * properties are not already loaded. Properties are loaded in from the
++     * specified file, or default locations.
++     *
++     * @param configFile
++     *            The <code>dspace.cfg</code> configuration file to use, or
++     *            <code>null</code> to try default locations
++     */
++    public static synchronized void loadConfig(String configFile)
++    {
++        if (properties != null)
++        {
++            return;
++        }
++
++        URL url = null;
++
++        InputStream is = null;
++        InputStreamReader reader = null;
++        try
++        {
++            String configProperty = null;
++            try
++            {
++                configProperty = System.getProperty("dspace.configuration");
++            }
++            catch (SecurityException se)
++            {
++                // A security manager may stop us from accessing the system properties.
++                // This isn't really a fatal error though, so catch and ignore
++                log.warn("Unable to access system properties, ignoring.", se);
++            }
++
++            // should only occur after a flush()
++            if (loadedFile != null)
++            {
++                info("Reloading current config file: " + loadedFile.getAbsolutePath());
++
++                url = loadedFile.toURI().toURL();
++            }
++            else if (configFile != null)
++            {
++                info("Loading provided config file: " + configFile);
++
++                loadedFile = new File(configFile);
++                url = loadedFile.toURI().toURL();
++
++            }
++            // Has the default configuration location been overridden?
++            else if (configProperty != null)
++            {
++                info("Loading system provided config property (-Ddspace.configuration): " + configProperty);
++
++                // Load the overriding configuration
++                loadedFile = new File(configProperty);
++                url = loadedFile.toURI().toURL();
++            }
++            // Load configuration from default location
++            else
++            {
++                url = ConfigurationManager.class.getResource("/dspace.cfg");
++                if (url != null)
++                {
++                    info("Loading from classloader: " + url);
++
++                    loadedFile = new File(url.getPath());
++                }
++            }
++
++            if (url == null)
++            {
++                fatal("Cannot find dspace.cfg");
++                throw new IllegalStateException("Cannot find dspace.cfg");
++            }
++            else
++            {
++                properties = new Properties();
++                is = url.openStream();
++                reader = new InputStreamReader(is, "UTF-8");
++                properties.load(reader);
++
++                // walk values, interpolating any embedded references.
++                for (Enumeration<?> pe = properties.propertyNames(); pe.hasMoreElements(); )
++                {
++                    String key = (String)pe.nextElement();
++                    String value = interpolate(key, properties.getProperty(key), 1);
++                    if (value != null)
++                    {
++                        properties.setProperty(key, value);
++                    }
++                }
++            }
++
++        }
++        catch (IOException e)
++        {
++            fatal("Can't load configuration: " + url, e);
++
++            // FIXME: Maybe something more graceful here, but without a
++            // configuration we can't do anything.
++            throw new IllegalStateException("Cannot load configuration: " + url, e);
++        }
++        finally
++        {
++            if (reader != null)
++            {
++                try {
++                    reader.close();
++                }
++                catch (IOException ioe)
++                {
++                }
++            }
++            if (is != null)
++            {
++                try
++                {
++                    is.close();
++                }
++                catch (IOException ioe)
++                {
++                }
++            }
++        }
++
++        try
++        {
++            /*
++             * Initialize Logging once ConfigurationManager is initialized.
++             *
++             * This is controlled by a property in dspace.cfg.  If the property
++             * is absent then nothing will be configured and the application
++             * will use the defaults provided by log4j.
++             *
++             * Property format is:
++             *
++             * log.init.config = ${dspace.dir}/config/log4j.properties
++             * or
++             * log.init.config = ${dspace.dir}/config/log4j.xml
++             *
++             * See default log4j initialization documentation here:
++             * http://logging.apache.org/log4j/docs/manual.html
++             *
++             * If there is a problem with the file referred to in
++             * "log.configuration", it needs to be sent to System.err
++             * so do not instantiate another Logging configuration.
++             *
++             */
++            String dsLogConfiguration = ConfigurationManager.getProperty("log.init.config");
++
++            if (dsLogConfiguration == null || System.getProperty("dspace.log.init.disable") != null)
++            {
++                /*
++                 * Do nothing if log config not set in dspace.cfg or "dspace.log.init.disable"
++                 * system property set.  Leave it upto log4j to properly init its logging
++                 * via classpath or system properties.
++                 */
++                info("Using default log4j provided log configuration." +
++                        "  If unintended, check your dspace.cfg for (log.init.config)");
++            }
++            else
++            {
++                info("Using dspace provided log configuration (log.init.config)");
++
++
++                File logConfigFile = new File(dsLogConfiguration);
++
++                if(logConfigFile.exists())
++                {
++                    info("Loading: " + dsLogConfiguration);
++
++                    OptionConverter.selectAndConfigure(logConfigFile.toURI()
++                            .toURL(), null, org.apache.log4j.LogManager
++                            .getLoggerRepository());
++                }
++                else
++                {
++                    info("File does not exist: " + dsLogConfiguration);
++                }
++            }
++
++        }
++        catch (MalformedURLException e)
++        {
++            fatal("Can't load dspace provided log4j configuration", e);
++            throw new IllegalStateException("Cannot load dspace provided log4j configuration",e);
++        }
++
++    }
++
++    /**
++     * Wrapper for {@link NewsManager#getNewsFilePath()}.
++     * @deprecated since 4.0
++     */
++    public static String getNewsFilePath()
++    {
++        return NewsManager.getNewsFilePath();
++    }
++
++    /**
++     * Wrapper for {@link NewsManager#readNewsFile(String)}.
++     * @deprecated since 4.0
++     */
++    public static String readNewsFile(String name)
++    {
++        return NewsManager.readNewsFile(name);
++    }
++
++    /**
++     * Wrapper for {@link NewsManager#writeNewsFile(String, String)}.
++     * @deprecated since 4.0
++     */
++    public static String writeNewsFile(String file, String news)
++    {
++        return NewsManager.writeNewsFile(file, news);
++    }
++
++    /**
++     * Wrapper for {@link LicenseManager#getLicenseText(String)}.
++     * @deprecated since 4.0
++     */
++    public static String getLicenseText(String licenseFile)
++    {
++        return LicenseManager.getLicenseText(licenseFile);
++    }
++
++    /**
++     * Wrapper for {@link LicenseManager#getDefaultSubmissionLicense()}.
++     * @deprecated since 4.0
++     */
++    public static String getDefaultSubmissionLicense()
++    {
++        return LicenseManager.getDefaultSubmissionLicense();
++    }
++
++    /**
++     * Wrapper for {@link LicenseManager#writeLicenseFile(String, String)}.
++     * @deprecated since 4.0
++     */
++    public static void writeLicenseFile(String licenseFile, String newLicense)
++    {
++        LicenseManager.writeLicenseFile(licenseFile, newLicense);
++    }
++
++    /**
++     * Recursively interpolate variable references in value of
++     * property named "key".
++     * @return new value if it contains interpolations, or null
++     *   if it had no variable references.
++     */
++    private static String interpolate(String key, String value, int level)
++    {
++        if (level > RECURSION_LIMIT)
++        {
++            throw new IllegalArgumentException("ConfigurationManager: Too many levels of recursion in configuration property variable interpolation, property=" + key);
++        }
++        //String value = (String)properties.get(key);
++        int from = 0;
++        StringBuffer result = null;
++        while (from < value.length())
++        {
++            int start = value.indexOf("${", from);
++            if (start >= 0)
++            {
++                int end = value.indexOf('}', start);
++                if (end < 0)
++                {
++                    break;
++                }
++                String var = value.substring(start+2, end);
++                if (result == null)
++                {
++                    result = new StringBuffer(value.substring(from, start));
++                }
++                else
++                {
++                    result.append(value.substring(from, start));
++                }
++                if (properties.containsKey(var))
++                {
++                    String ivalue = interpolate(var, properties.getProperty(var), level+1);
++                    if (ivalue != null)
++                    {
++                        result.append(ivalue);
++                        properties.setProperty(var, ivalue);
++                    }
++                    else
++                    {
++                        result.append(((String)properties.getProperty(var)).trim());
++                    }
++                }
++                else
++                {
++                    log.warn("Interpolation failed in value of property \""+key+
++                             "\", there is no property named \""+var+"\"");
++                }
++                from = end+1;
++            }
++            else
++            {
++                break;
++            }
++        }
++        if (result != null && from < value.length())
++        {
++            result.append(value.substring(from));
++        }
++        return (result == null) ? null : result.toString();
++    }
++
++    /**
++     * Command-line interface for running configuration tasks. Possible
++     * arguments:
++     * <ul>
++     * <li><code>-property name</code> prints the value of the property
++     * <code>name</code> from <code>dspace.cfg</code> to the standard
++     * output. If the property does not exist, nothing is written.</li>
++     * </ul>
++     *
++     * @param argv
++     *            command-line arguments
++     */
++    public static void main(String[] argv)
++    {
++        if ((argv.length == 2) && argv[0].equals("-property"))
++        {
++            String val = getProperty(argv[1]);
++
++            if (val != null)
++            {
++                System.out.println(val);
++            }
++            else
++            {
++                System.out.println("");
++            }
++
++            System.exit(0);
++        }
++        else if ((argv.length == 4) && argv[0].equals("-module") &&
++                                        argv[2].equals("-property"))
++        {
++            String val = getProperty(argv[1], argv[3]);
++
++            if (val != null)
++            {
++                System.out.println(val);
++            }
++            else
++            {
++                System.out.println("");
++            }
++
++            System.exit(0);
++        }
++        else
++        {
++            System.err
++                    .println("Usage: ConfigurationManager OPTION\n  [-module mod.name] -property prop.name  get value of prop.name from module or dspace.cfg");
++        }
++
++        System.exit(1);
++    }
++
++    private static void info(String string)
++    {
++        if (!isLog4jConfigured())
++        {
++            System.out.println("INFO: " + string);
++        }
++        else
++        {
++            log.info(string);
++        }
++    }
++
++    private static void warn(String string)
++    {
++        if (!isLog4jConfigured())
++        {
++            System.out.println("WARN: " + string);
++        }
++        else
++        {
++            log.warn(string);
++        }
++    }
++
++    private static void fatal(String string, Exception e)
++    {
++        if (!isLog4jConfigured())
++        {
++            System.out.println("FATAL: " + string);
++            e.printStackTrace();
++        }
++        else
++        {
++            log.fatal(string, e);
++        }
++    }
++
++    private static void fatal(String string)
++    {
++        if (!isLog4jConfigured())
++        {
++            System.out.println("FATAL: " + string);
++        }
++        else
++        {
++            log.fatal(string);
++        }
++    }
++
++    /*
++     * Only current solution available to detect
++     * if log4j is truly configured.
++     */
++    private static boolean isLog4jConfigured()
++    {
++        Enumeration<?> en = org.apache.log4j.LogManager.getRootLogger()
++                .getAllAppenders();
++
++        if (!(en instanceof org.apache.log4j.helpers.NullEnumeration))
++        {
++            return true;
++        }
++        else
++        {
++            Enumeration<?> cats = Category.getCurrentCategories();
++            while (cats.hasMoreElements())
++            {
++                Category c = (Category) cats.nextElement();
++                if (!(c.getAllAppenders() instanceof org.apache.log4j.helpers.NullEnumeration))
++                {
++                    return true;
++                }
++            }
++        }
++        return false;
++    }
++
++}
+diff --git a/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/org/dspace/statistics/util/SpiderDetector.java b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/org/dspace/statistics/util/SpiderDetector.java
+new file mode 100644
+index 0000000..cb913b5
+--- /dev/null
++++ b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/org/dspace/statistics/util/SpiderDetector.java
+@@ -0,0 +1,261 @@
++/**
++ * The contents of this file are subject to the license and copyright
++ * detailed in the LICENSE and NOTICE files at the root of the source
++ * tree and available online at
++ *
++ * http://www.dspace.org/license/
++ */
++package org.dspace.statistics.util;
++
++import java.io.*;
++import java.util.*;
++import java.util.regex.*;
++import javax.servlet.http.*;
++import org.apache.log4j.*;
++import org.dspace.core.*;
++import org.dspace.statistics.*;
++
++/**
++ * SpiderDetector is used to find IP's that are spiders...
++ * In future someone may add UserAgents and Host Domains
++ * to the detection criteria here.
++ *
++ * @author kevinvandevelde at atmire.com
++ * @author ben at atmire.com
++ * @author Mark Diggory (mdiggory at atmire.com)
++ * @author Kevin Van Ransbeeck at atmire.com
++ */
++public class SpiderDetector {
++
++    private static Logger log = Logger.getLogger(SpiderDetector.class);
++
++    /**
++     * Sparse HAshTable structure to hold IP Address Ranges.
++     */
++    private static IPTable table = null;
++    private static Set<Pattern> spidersRegex = Collections.synchronizedSet(new HashSet<Pattern>());
++    private static Set<String> spidersMatched = null;
++
++    /**
++     * Utility method which Reads the ip addresses out a file & returns them in a Set
++     *
++     * @param spiderIpFile the location of our spider file
++     * @return a vector full of ip's
++     * @throws java.io.IOException could not happen since we check the file be4 we use it
++     */
++    public static Set<String> readIpAddresses(File spiderIpFile) throws IOException {
++        Set<String> ips = new HashSet<String>();
++
++        if (!spiderIpFile.exists() || !spiderIpFile.isFile()) {
++            return ips;
++        }
++
++        //Read our file & get all them ip's
++        BufferedReader in = new BufferedReader(new FileReader(spiderIpFile));
++        String line;
++        while ((line = in.readLine()) != null) {
++            if (!line.startsWith("#")) {
++                line = line.trim();
++
++                if (!line.equals("") && !Character.isDigit(line.charAt(0))) {
++                    // is a hostname
++                    // add this functionality later...
++                } else if (!line.equals("")) {
++                    ips.add(line);
++                    // is full v4 ip (too tired to deal with v6)...
++                }
++            } else {
++                //   ua.add(line.replaceFirst("#","").replaceFirst("UA","").trim());
++                // ... add this functionality later
++            }
++        }
++        in.close();
++        return ips;
++    }
++
++    /**
++     * Get an immutable Set representing all the Spider Addresses here
++     *
++     * @return Set<String> setOfIpAddresses
++     */
++    public static Set<String> getSpiderIpAddresses() {
++        loadSpiderIpAddresses();
++        return table.toSet();
++    }
++
++    /*
++        private loader to populate the table from files.
++     */
++
++    private static synchronized void loadSpiderIpAddresses() {
++        if (table == null) {
++            table = new IPTable();
++
++            String filePath = ConfigurationManager.getProperty("dspace.dir");
++            try {
++                File spidersDir = new File(filePath, "config/spiders");
++
++                if (spidersDir.exists() && spidersDir.isDirectory()) {
++                    for (File file : spidersDir.listFiles()) {
++                        for (String ip : readIpAddresses(file)) {
++                            table.add(ip);
++                        }
++                        log.info("Loaded Spider IP file: " + file);
++                    }
++                } else {
++                    log.info("No spider file loaded");
++                }
++            } catch (Exception e) {
++                log.error("Error Loading Spiders:" + e.getMessage(), e);
++            }
++        }
++    }
++
++    /**
++     * Static Service Method for testing spiders against existing spider files.
++     * <p/>
++     * In the future this will be extended to support User Agent and
++     * domain Name detection.
++     * <p/>
++     * In future spiders HashSet may be optimized as byte offset array to
++     * improve performance and memory footprint further.
++     *
++     * @param request
++     * @return true|false if the request was detected to be from a spider
++     */
++    public static boolean isSpider(HttpServletRequest request) {
++        /*
++        * 1) If the IP address matches the spider IP addresses (this is the current implementation)
++        */
++        boolean checkSpidersIP = ConfigurationManager.getBooleanProperty("stats","spider.ipmatch.enabled", true);
++        if (checkSpidersIP) {
++            if (SolrLogger.isUseProxies() && request.getHeader("X-Forwarded-For") != null) {
++                /* This header is a comma delimited list */
++                for (String xfip : request.getHeader("X-Forwarded-For").split(",")) {
++                    if (isSpider(xfip)) {
++                        log.debug("spider.ipmatch");
++                        return true;
++                    }
++                }
++            } else if (isSpider(request.getRemoteAddr())) {
++                log.debug("spider.ipmatch");
++                return true;
++            }
++        }
++        /*
++         * 2) if the user-agent header is empty - DISABLED BY DEFAULT -
++         */
++        boolean checkSpidersEmptyAgent = ConfigurationManager.getBooleanProperty("stats","spider.agentempty.enabled", false);
++        if (checkSpidersEmptyAgent) {
++            if (request.getHeader("user-agent") == null || request.getHeader("user-agent").length() == 0) {
++                log.debug("spider.agentempty");
++                return true;
++            }
++        }
++        /*
++         * 3) if the user-agent corresponds to one of the regexes at http://www.projectcounter.org/r4/COUNTER_robot_txt_list_Jan_2011.txt
++         */
++        boolean checkSpidersTxt = ConfigurationManager.getBooleanProperty("stats","spider.agentregex.enabled", true);
++        if (checkSpidersTxt) {
++            String userAgent = request.getHeader("user-agent");
++
++            if (userAgent != null && !userAgent.equals("")) {
++                return isSpiderRegex(userAgent);
++            }
++        }
++        return false;
++    }
++
++    /**
++     * Check individual IP is a spider.
++     *
++     * @param ip
++     * @return if is spider IP
++     */
++    public static boolean isSpider(String ip) {
++        if (table == null) {
++            SpiderDetector.loadSpiderIpAddresses();
++        }
++
++        try {
++            if (table.contains(ip)) {
++                return true;
++            }
++        } catch (Exception e) {
++            return false;
++        }
++
++        return false;
++    }
++
++    /**
++     * Checks the user-agent string vs a set of known regexes from spiders
++     * A second Set is kept for fast-matching.
++     * If a user-agent is matched once, it is added to this set with "known agents".
++     * If this user-agent comes back later, we can do a quick lookup in this set,
++     * instead of having to loop over the entire set with regexes again.
++     *
++     * @param userAgent String
++     * @return true if the user-agent matches a regex
++     */
++    public static boolean isSpiderRegex(String userAgent) {
++        if (spidersMatched != null && spidersMatched.contains(userAgent)) {
++            log.debug("spider.agentregex");
++            return true;
++        } else {
++            synchronized(spidersRegex) {
++                if (spidersRegex.isEmpty())
++                loadSpiderRegexFromFile();
++            }
++
++            if (spidersRegex != null) {
++                for (Object regex : spidersRegex.toArray()) {
++                    Matcher matcher = ((Pattern) regex).matcher(userAgent);
++                    if (matcher.find()) {
++                        if (spidersMatched == null) {
++                            spidersMatched = new HashSet<String>();
++                        }
++                        if (spidersMatched.size() >= 100) {
++                            spidersMatched.clear();
++                        }
++                        spidersMatched.add(userAgent);
++                        log.debug("spider.agentregex");
++                        return true;
++                    }
++                }
++            }
++            return false;
++        }
++    }
++
++    /**
++     * Populate static Set spidersRegex from local txt file.
++     * Original file downloaded from http://www.projectcounter.org/r4/COUNTER_robot_txt_list_Jan_2011.txt during build
++     */
++    public static void loadSpiderRegexFromFile() {
++        String spidersTxt = ConfigurationManager.getProperty("stats","spider.agentregex.regexfile");
++        DataInputStream in = null;
++        try {
++            FileInputStream fstream = new FileInputStream(spidersTxt);
++            in = new DataInputStream(fstream);
++            BufferedReader br = new BufferedReader(new InputStreamReader(in));
++            String strLine;
++            while ((strLine = br.readLine()) != null) {
++                spidersRegex.add(Pattern.compile(strLine, Pattern.CASE_INSENSITIVE));
++            }
++            log.info("Loaded Spider Regex file: " + spidersTxt);
++        } catch (FileNotFoundException e) {
++            log.error("File with spiders regex not found @ " + spidersTxt);
++        } catch (IOException e) {
++            log.error("Could not read from file " + spidersTxt);
++        } finally {
++            try {
++                if (in != null) {
++                    in.close();
++                }
++            } catch (IOException e) {
++                log.error("Could not close file " + spidersTxt);
++            }
++        }
++    }
++}
+diff --git a/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/org/dspace/usage/AbstractUsageEventListener.java b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/org/dspace/usage/AbstractUsageEventListener.java
+new file mode 100644
+index 0000000..e6cb685
+--- /dev/null
++++ b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/org/dspace/usage/AbstractUsageEventListener.java
+@@ -0,0 +1,70 @@
++/**
++ * The contents of this file are subject to the license and copyright
++ * detailed in the LICENSE and NOTICE files at the root of the source
++ * tree and available online at
++ *
++ * http://www.dspace.org/license/
++ */
++package org.dspace.usage;
++
++import org.dspace.services.EventService;
++import org.dspace.services.model.EventListener;
++import org.springframework.beans.BeansException;
++import org.springframework.beans.factory.config.BeanPostProcessor;
++
++/**
++ * AbstractUsageEventListener is used as the base class for listening events running
++ * in the EventService.
++ *
++ * @author Mark Diggory (mdiggory at atmire.com)
++ * @version $Revision: $
++ */
++public abstract class AbstractUsageEventListener implements EventListener, BeanPostProcessor {
++
++	public AbstractUsageEventListener() {
++		super();
++	}
++
++    @Override
++    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
++        return bean;
++    }
++
++    @Override
++    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
++        if(beanName.equals("org.dspace.services.EventService"))
++        {
++            setEventService((EventService) bean);
++        }
++        return bean;
++	}
++
++	/**
++	 * Empty String[] flags to have Listener
++	 * consume any event name prefixes.
++	 */
++	public String[] getEventNamePrefixes() {
++		return new String[0];
++	}
++
++	/**
++	 * Currently consumes events generated for
++	 * all resources.
++	 */
++	public String getResourcePrefix() {
++		return null;
++	}
++
++	public void setEventService(EventService service) {
++		if(service != null)
++        {
++            service.registerEventListener(this);
++        }
++		else
++        {
++            throw new IllegalStateException("EventService handed to Listener cannot be null");
++        }
++
++	}
++
++}
+diff --git a/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/storage/rdbms/DatabaseRegistryUpdater.java b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/storage/rdbms/DatabaseRegistryUpdater.java
+new file mode 100644
+index 0000000..294477f
+--- /dev/null
++++ b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/java/storage/rdbms/DatabaseRegistryUpdater.java
+@@ -0,0 +1,230 @@
++/**
++ * The contents of this file are subject to the license and copyright
++ * detailed in the LICENSE and NOTICE files at the root of the source
++ * tree and available online at
++ *
++ * http://www.dspace.org/license/
++ */
++package storage.rdbms;
++
++import org.dspace.administer.MetadataImporter;
++import org.dspace.administer.RegistryLoader;
++import org.dspace.core.ConfigurationManager;
++import org.dspace.core.Context;
++import org.dspace.eperson.Group;
++import org.dspace.storage.rdbms.DatabaseUtils;
++import org.flywaydb.core.api.MigrationInfo;
++import org.flywaydb.core.api.callback.FlywayCallback;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++
++import java.io.File;
++import java.sql.Connection;
++
++/**
++ * This is a FlywayCallback class which automatically updates the
++ * Metadata Schema Registry and Bitstream Formats Registries BEFORE
++ * any Database migration occurs.
++ * <P>
++ * The reason this runs BEFORE a migration is to ensure that any new
++ * metadata fields are FIRST added to our registries, so that the
++ * migrations can make use of those new metadata fields, etc.
++ * <P>
++ * However, there is one exception. If this is a "fresh install" of DSpace,
++ * we'll need to wait until the necessary database tables are created. In
++ * that scenario we will load registries AFTER the initial migration.
++ *
++ * @author Tim Donohue
++ */
++public class DatabaseRegistryUpdater implements FlywayCallback
++{
++     /** logging category */
++    private static final Logger log = LoggerFactory.getLogger(DatabaseRegistryUpdater.class);
++
++    // Whether or not this is a fresh install of DSpace
++    // This determines whether to update registries PRE or POST migration
++    private boolean freshInstall = false;
++
++    /**
++     * Method to actually update our registries from latest configs
++     */
++    private void updateRegistries()
++    {
++        Context context = null;
++        try
++        {
++            context = new Context();
++            context.turnOffAuthorisationSystem();
++
++            String base = ConfigurationManager.getProperty("dspace.dir")
++                            + File.separator + "config" + File.separator
++                            + "registries" + File.separator;
++
++            // Load updates to Bitstream format registry (if any)
++            log.info("Updating Bitstream Format Registry based on " + base + "bitstream-formats.xml");
++            RegistryLoader.loadBitstreamFormats(context, base + "bitstream-formats.xml");
++
++            // Load updates to Metadata schema registries (if any)
++            log.info("Updating Metadata Registries based on metadata type configs in " + base);
++            MetadataImporter.loadRegistry(base + "dublin-core-types.xml", true);
++            MetadataImporter.loadRegistry(base + "dcterms-types.xml", true);
++            MetadataImporter.loadRegistry(base + "eperson-types.xml", true);
++            MetadataImporter.loadRegistry(base + "sword-metadata.xml", true);
++
++            // Check if XML Workflow is enabled in workflow.cfg
++            if (ConfigurationManager.getProperty("workflow", "workflow.framework").equals("xmlworkflow"))
++            {
++                // If so, load in the workflow metadata types as well
++                MetadataImporter.loadRegistry(base + "workflow-types.xml", true);
++            }
++
++            context.restoreAuthSystemState();
++            // Commit changes and close context
++            context.complete();
++            log.info("All Bitstream Format Regitry and Metadata Registry updates were completed.");
++        }
++        catch(Exception e)
++        {
++            log.error("Error attempting to update Bitstream Format and/or Metadata Registries", e);
++        }
++        finally
++        {
++            // Clean up our context, if it still exists & it was never completed
++            if(context!=null && context.isValid())
++                context.abort();
++        }
++    }
++
++
++    @Override
++    public void afterClean(Connection connection)
++    {
++        // do nothing
++    }
++
++    @Override
++    public void afterEachMigrate(Connection connection, MigrationInfo info)
++    {
++        // do nothing
++    }
++
++    @Override
++    public void afterInfo(Connection connection)
++    {
++        if (!freshInstall) {
++            updateRegistries();
++        }
++    }
++
++    @Override
++    public void afterInit(Connection connection)
++    {
++        // do nothing
++    }
++
++    @Override
++    public void afterMigrate(Connection connection)
++    {
++        // If this is a fresh install, we must update registries AFTER the
++        // initial migrations (since the registry tables won't exist until the
++        // initial migrations are performed)
++        if(freshInstall)
++        {
++            updateRegistries();
++            freshInstall = false;
++        }
++
++        // After every migrate, ensure default Groups are setup correctly.
++        Context context = null;
++        try
++        {
++            context = new Context();
++            context.turnOffAuthorisationSystem();
++            // While it's not really a formal "registry", we need to ensure the
++            // default, required Groups exist in the DSpace database
++            Group.initDefaultGroupNames(context);
++            context.restoreAuthSystemState();
++            // Commit changes and close context
++            context.complete();
++        }
++        catch(Exception e)
++        {
++            log.error("Error attempting to add/update default DSpace Groups", e);
++        }
++        finally
++        {
++            // Clean up our context, if it still exists & it was never completed
++            if(context!=null && context.isValid())
++                context.abort();
++        }
++    }
++
++    @Override
++    public void afterRepair(Connection connection)
++    {
++        // do nothing
++    }
++
++    @Override
++    public void afterValidate(Connection connection)
++    {
++        // do nothing
++    }
++
++    @Override
++    public void beforeClean(Connection connection)
++    {
++        // do nothing
++    }
++
++    @Override
++    public void beforeEachMigrate(Connection connection, MigrationInfo info)
++    {
++        // do nothing
++    }
++
++    @Override
++    public void beforeInfo(Connection connection)
++    {
++        // do nothing
++    }
++
++    @Override
++    public void beforeInit(Connection connection)
++    {
++        // do nothing
++    }
++
++    @Override
++    public void beforeMigrate(Connection connection)
++    {
++        // Check if our MetadataSchemaRegistry table exists yet.
++        // If it does NOT, then this is a fresh install & we'll need to
++        // updateRegistries() AFTER migration
++        if(DatabaseUtils.tableExists(connection, "MetadataSchemaRegistry"))
++        {
++            // Ensure registries are updated BEFORE a database migration (upgrade)
++            // We need to ensure any new metadata fields are added before running
++            // migrations, just in case the migrations need to utilize those new fields
++            updateRegistries();
++        }
++        else
++        {
++            // this is a fresh install, need to migrate first in order to create
++            // the registry tables.
++            freshInstall = true;
++        }
++    }
++
++    @Override
++    public void beforeRepair(Connection connection)
++    {
++        // do nothing
++    }
++
++    @Override
++    public void beforeValidate(Connection connection)
++    {
++        // do nothing
++    }
++}
+diff --git a/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/resources/org/dspace/storage/rdbms/sqlmigration/oracle/V5.0_2015.06.18__statistics-harvester.sql b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/resources/org/dspace/storage/rdbms/sqlmigration/oracle/V5.0_2015.06.18__statistics-harvester.sql
+new file mode 100644
+index 0000000..dd0d67b
+--- /dev/null
++++ b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/resources/org/dspace/storage/rdbms/sqlmigration/oracle/V5.0_2015.06.18__statistics-harvester.sql
+@@ -0,0 +1,27 @@
++-- CREATE SEQUENCE "openurltracker_seq" start with 1 increment by 1 nocache nocycle noorder;
++--
++-- CREATE table "OpenUrlTracker" (
++--     "tracker_id"  NUMBER NOT NULL,
++--     "tracker_url" VARCHAR2(255) NOT NULL,
++--     "uploaddate"  DATE,
++--     constraint  "OpenUrlTracker_PK" primary key ("tracker_id")
++-- );
++--
++-- CREATE trigger "BI_OpenUrlTracker"
++--   before insert on "OpenUrlTracker"
++--   for each row
++-- begin
++--   if :NEW."tracker_id" is null then
++--     select "openurltracker_seq".nextval into :NEW."tracker_id" from dual;
++--   end if;
++-- end;
++
++CREATE SEQUENCE openurltracker_seq;
++
++CREATE TABLE OpenUrlTracker
++(
++    tracker_id NUMBER,
++    tracker_url VARCHAR2(1000),
++    uploaddate DATE,
++    CONSTRAINT  OpenUrlTracker_PK PRIMARY KEY (tracker_id)
++);
+diff --git a/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/resources/org/dspace/storage/rdbms/sqlmigration/postgres/V5.0_2015.06.18__statistics-harvester.sql b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/resources/org/dspace/storage/rdbms/sqlmigration/postgres/V5.0_2015.06.18__statistics-harvester.sql
+new file mode 100644
+index 0000000..21b9d74
+--- /dev/null
++++ b/dspace/modules/atmire-statistics-exporter/atmire-statistics-exporter-api/src/main/resources/org/dspace/storage/rdbms/sqlmigration/postgres/V5.0_2015.06.18__statistics-harvester.sql
+@@ -0,0 +1,8 @@
++CREATE SEQUENCE openurltracker_seq;
++
++CREATE TABLE OpenUrlTracker
++(
++  tracker_id  INTEGER PRIMARY KEY,
++  tracker_url VARCHAR(1000),
++  uploaddate  DATE
++);
+diff --git a/dspace/modules/atmire-statistics-exporter/pom.xml b/dspace/modules/atmire-statistics-exporter/pom.xml
+new file mode 100644
+index 0000000..9159923
+--- /dev/null
++++ b/dspace/modules/atmire-statistics-exporter/pom.xml
+@@ -0,0 +1,24 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project xmlns="http://maven.apache.org/POM/4.0.0"
++         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
++    <modelVersion>4.0.0</modelVersion>
++
++    <groupId>com.atmire</groupId>
++    <artifactId>atmire-statistics-exporter</artifactId>
++    <packaging>pom</packaging>
++    <url>atmire.com</url>
++    <name>Atmire statistics exporter</name>
++    <version>1.0.0</version>
++
++    <parent>
++        <groupId>org.dspace</groupId>
++        <artifactId>modules</artifactId>
++        <version>[5.0,5.*]</version>
++    </parent>
++
++    <modules>
++        <module>atmire-statistics-exporter-api</module>
++    </modules>
++
++</project>
+diff --git a/dspace/modules/jspui/pom.xml b/dspace/modules/jspui/pom.xml
+index 737804e..38392b8 100644
+--- a/dspace/modules/jspui/pom.xml
++++ b/dspace/modules/jspui/pom.xml
+@@ -67,6 +67,13 @@
+                             <groupId>org.dspace</groupId>
+                             <artifactId>dspace-jspui</artifactId>
+                             <type>war</type>
++                            <excludes>
++                                <!--
++                                   keep lang web.xml from overiding xmlui
++                                -->
++
++                                <exclude>WEB-INF/classes/**</exclude>
++                            </excludes>
+                         </overlay>
+                     </overlays>
+                 </configuration>
+@@ -81,6 +88,13 @@
+ 
+     <dependencies>
+ 
++        <dependency>
++            <groupId>com.atmire</groupId>
++            <artifactId>atmire-statistics-exporter-api</artifactId>
++            <version>1.0.0</version>
++            <type>jar</type>
++        </dependency>
++
+         <dependency>
+             <groupId>org.dspace.modules</groupId>
+             <artifactId>additions</artifactId>
+@@ -106,4 +120,4 @@
+         </dependency>
+     </dependencies>
+ 
+-</project>
+\ No newline at end of file
++</project>
+diff --git a/dspace/modules/pom.xml b/dspace/modules/pom.xml
+index 35df4d4..ec3b95b 100644
+--- a/dspace/modules/pom.xml
++++ b/dspace/modules/pom.xml
+@@ -23,6 +23,7 @@
+          as a dependency in most other modules in [src]/dspace/modules -->
+     <modules>
+         <module>additions</module>
++        <module>atmire-statistics-exporter</module>
+     </modules>
+ 
+     <!-- 
+diff --git a/dspace/modules/xmlui/pom.xml b/dspace/modules/xmlui/pom.xml
+index 6e538e0..4afcde6 100644
+--- a/dspace/modules/xmlui/pom.xml
++++ b/dspace/modules/xmlui/pom.xml
+@@ -193,6 +193,14 @@
+             <artifactId>additions</artifactId>
+         </dependency>
+ 
++        <!-- Atmire Statistics Exporter Dependency -->
++        <dependency>
++            <groupId>com.atmire</groupId>
++            <artifactId>atmire-statistics-exporter-api</artifactId>
++            <version>1.0.0</version>
++            <type>jar</type>
++        </dependency>
++
+         <!-- DSpace XMLUI Languages -->
+         <dependency>
+             <groupId>org.dspace</groupId>
+diff --git a/dspace/pom.xml b/dspace/pom.xml
+index b317fa8..87c2933 100644
+--- a/dspace/pom.xml
++++ b/dspace/pom.xml
+@@ -22,6 +22,7 @@
+     <properties>
+         <!-- This is the path to the root [dspace-src] directory. -->
+         <root.basedir>${basedir}/..</root.basedir>
++        <global.version>5.6</global.version>
+     </properties>
+ 
+     <build>
+@@ -29,6 +30,38 @@
+             <!-- Filter using the properties file defined by dspace-parent POM -->
+             <filter>${filters.file}</filter>
+         </filters>
++
++        <resources>
++            <!-- Enumerate filtered files explicitly to avoid issues with other config tech. -->
++            <resource>
++                <directory>${basedir}</directory>
++                <filtering>true</filtering>
++                <includes>
++                    <include>config/default.context.xml</include>
++                    <include>config/dspace.cfg</include>
++                    <include>config/log4j-handle-plugin.properties</include>
++                    <include>config/log4j.properties</include>
++                    <include>config/modules/curate.cfg</include>
++                    <include>config/modules/com.atmire.statistics.oai.cfg</include>
++                    <include>config/modules/solr-statistics.cfg</include>
++                </includes>
++            </resource>
++            <!-- Declare a mutually exclusive resource set for non-filtered files. -->
++            <resource>
++                <directory>${basedir}</directory>
++                <filtering>false</filtering>
++                <excludes>
++                    <exclude>config/default.context.xml</exclude>
++                    <exclude>config/dspace.cfg</exclude>
++                    <exclude>config/log4j-handle-plugin.properties</exclude>
++                    <exclude>config/log4j.properties</exclude>
++                    <exclude>config/modules/curate.cfg</exclude>
++                    <exclude>config/modules/com.atmire.statistics.oai.cfg</exclude>
++                    <exclude>config/modules/solr-statistics.cfg</exclude>
++                </excludes>
++            </resource>
++        </resources>
++
+     </build>
+ 
+     <profiles>
+diff --git a/dspace/src/main/config/build.xml b/dspace/src/main/config/build.xml
+index 3264b58..122a359 100644
+--- a/dspace/src/main/config/build.xml
++++ b/dspace/src/main/config/build.xml
+@@ -135,6 +135,7 @@ Common usage:
+         <echo message="                    touching your data" />
+     	<echo message="update_configs  --> Update your configs directory with new configuration files"/>
+     	<echo message="update_geolite  --> Dowload and install GeoCity database into ${dspace.dir}/config" />
++        <echo message="update_spiders  --> Dowload and install Spider Robots database into ${dspace.dir}/config" />
+         <echo message="update_code     --> Update compiled code (bin, lib, and etc directories)" />
+         <echo message="update_webapps  --> Update web applications" />
+         <echo message="update_solr_indexes --> Checks if any Solr indexes need upgrading (to latest Solr), and if so, upgrades them." />
+@@ -196,6 +197,7 @@ Common usage:
+     <!-- ============================================================= -->
+     <target name="update_configs" depends="overwrite_configs,overwrite_solr_configs" description="Updates the Configuration Directory">
+     	<antcall target="init_geolite" />
++        <antcall target="init_spiders" />
+     </target>
+ 
+     <target name="overwrite_configs" description="Overwrites a configuration directory." if="${overwrite}" depends="copy_configs_keep">
+@@ -869,6 +871,8 @@ Common usage:
+ 
+     	<antcall target="init_geolite" />
+ 
++        <antcall target="init_spiders" />
++
+         <echo>
+ ====================================================================
+  The DSpace code has been installed.
+@@ -945,6 +949,24 @@ You may manually install this file by following these steps:
+     <target name="init_geolite" depends="check_geolite" if="need.geolite">
+         <antcall target="update_geolite" />
+     </target>
++     <!-- installs and/or updates Project Counter Robot List resolution database -->
++    <target name="update_spiders">
++        <echo>Downloading: https://raw.githubusercontent.com/atmire/COUNTER-Robots/master/generated/COUNTER_Robots_list.txt</echo>
++        <get src="https://raw.githubusercontent.com/atmire/COUNTER-Robots/master/generated/COUNTER_Robots_list.txt" dest="${dspace.dir}/config/COUNTER_Robots_list.txt" verbose="true" />
++    </target>
++
++    <target name="check_spiders">
++        <condition property="need.spiders">
++            <not>
++                <available file="${dspace.dir}/config/COUNTER_Robots_list.txt" />
++            </not>
++        </condition>
++    </target>
++
++    <target name="init_spiders" depends="check_spiders" if="need.spiders">
++        <antcall target="update_spiders" />
++    </target>
++
+     
+     <!-- Check if any Solr indexes need updating to the version of Solr/Lucene we are using. -->
+     <target name="update_solr_indexes">
