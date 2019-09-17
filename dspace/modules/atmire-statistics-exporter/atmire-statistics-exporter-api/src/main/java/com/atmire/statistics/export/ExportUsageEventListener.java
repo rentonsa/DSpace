@@ -208,18 +208,31 @@ public class ExportUsageEventListener extends AbstractUsageEventListener {
     private void processItem(Context context, Item item, Bitstream bitstream, HttpServletRequest request, String eventType) throws IOException, SQLException {
         //We have a valid url collect the rest of the data
         String clientIP = request.getRemoteAddr();
-        if (ConfigurationManager.getBooleanProperty("useProxies", false) && request.getHeader("X-Forwarded-For") != null) {
+
+        // DATASHARE - start
+        if (ConfigurationManager.getBooleanProperty("useProxies", false) && 
+        		(request.getHeader("X-Forwarded-For") != null || request.getHeader("NS-X-Forwarded-For") != null)) {
+        	String headerString = "";
+        	// We look in NS-X-Forwarded-For first because we want to catch data if load balancer used.
+        	if (request.getHeader("NS-X-Forwarded-For") != null) {
+        		headerString = request.getHeader("NS-X-Forwarded-For");
+        	} else if(request.getHeader("X-Forwarded-For") != null) {
+        		headerString = request.getHeader("X-Forwarded-For");
+        	}
+
             /* This header is a comma delimited list */
-            for (String xfip : request.getHeader("X-Forwarded-For").split(",")) {
+            for (String xfip : headerString.split(",")) {
                 /* proxy itself will sometime populate this header with the same value in
                     remote address. ordering in spec is vague, we'll just take the last
                     not equal to the proxy
                 */
-                if (!request.getHeader("X-Forwarded-For").contains(clientIP)) {
+                if (!headerString.contains(clientIP)) {
                     clientIP = xfip.trim();
                 }
             }
         }
+       // DATASHARE - end
+
         String clientUA = StringUtils.defaultIfBlank(request.getHeader("USER-AGENT"), "");
         String referer = StringUtils.defaultIfBlank(request.getHeader("referer"), "");
 
