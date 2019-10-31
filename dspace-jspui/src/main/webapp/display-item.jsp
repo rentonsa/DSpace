@@ -51,7 +51,7 @@
 <%@page import="org.dspace.content.MetadataValue" %>
 <%@page import="org.dspace.license.factory.LicenseServiceFactory" %>
 <%@page import="org.dspace.license.service.CreativeCommonsService" %>
-<%@page import="org.dspace.handle.factory.HandleServiceFactory" %>
+<%@page import="org.dspace.handle.factory.ShareGeoHandleServiceFactory" %>
 <%@page import="org.dspace.versioning.service.VersionHistoryService" %>
 <%@page import="org.dspace.versioning.factory.VersionServiceFactory" %>
 

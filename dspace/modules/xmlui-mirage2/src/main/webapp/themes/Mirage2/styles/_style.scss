@@ -59,3 +59,118 @@
     margin-bottom:5px;
   }
 }
+
+// DATASHARE - start
+ .word-break {
+  -ms-word-break: normal;
+  word-break  : normal;
+}
+
+/*************************** header  *******************************/
+.navbar{
+  min-height: 10em;
+}
+
+header .navbar-default {
+  background-color: white;
+}
+
+header .navbar-default .navbar-toggle .icon-bar {
+  background-color: #888888 !important;
+}
+
+header .navbar-brand img {
+  height: 6em;
+}
+
+#header-datashare{
+  margin-left: -3em;
+}
+
+#header-eduni .navbar-brand{
+  padding-top: 1em;
+}
+
+#header-eduni .navbar-brand img {
+  padding: 0;
+  height: 2.5em;
+}
+
+#header-eduni {
+  float: right;
+}
+
+#is-banner{
+  padding-top: 0.5em;
+  background-color: #d40032;
+  color: white;
+  height: 3em;
+  font-family: "Crimson Text",serif;
+  font-size: 18px;
+}
+
+#is-banner a{
+  color: white;
+}
+
+#is-banner a:visited{
+  color: white;
+}
+
+#is-banner-text{
+  padding-top: 0.2em;
+  float: left;
+}
+
+#is-banner-contact-us{
+  padding-top: -0.2em;
+  float: right;
+}
+
+#is-banner-contact-us img{
+  height: 2em;
+}
+
+.trail-wrapper {
+  background-color: #cccccc;
+  height: 1.8em;
+  border-bottom: 1px solid #cccccc;
+  height: auto;
+}
+
+.trail-wrapper .breadcrumb {
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+}
+
+
+/*************************** home page  *******************************/
+#upload-data{
+  padding-bottom: 1em;
+}
+
+
+.btn-primary {
+  background-color: #d40032;
+  border-color: #d40032;
+}
+
+#home-welcome-deposit ul,
+#about-datashare ul{
+  list-style-type: none;
+}
+
+
+/*************************** menu *******************************/
+.list-group-item.active, .list-group-item.active:hover, .list-group-item.active:focus {
+  background-color: #d40032;
+  border-color: #d40032;
+}
+
+#aspect_viewArtifacts_Navigation_list_browse a:nth-child(3),
+#aspect_viewArtifacts_Navigation_list_browse a:nth-child(4),
+#aspect_browseArtifacts_CommunityBrowse_div_community-browse,
+#aspect_browseArtifacts_CollectionBrowse_div_collection-browse{
+  display: none;
+}
+// DATASHARE - end
