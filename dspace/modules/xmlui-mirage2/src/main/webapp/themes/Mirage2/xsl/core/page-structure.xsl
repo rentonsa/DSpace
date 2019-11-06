@@ -121,7 +121,7 @@
                            <div id="footer-1">
                              <div class="container">
                                <div>
-                                 <a href="http://www.ed.ac.uk/">THE UNIVERSITY OF EDINBURGH</a>
+                                 <a href="https://www.ed.ac.uk/">THE UNIVERSITY OF EDINBURGH</a>
                                </div>
                                <div id="footer-dsa" class="hidden-xs">
                                  <a href="https://assessment.datasealofapproval.org/assessment_175/seal/html/">
@@ -136,10 +136,10 @@
                                <div id="footer-2-col-1">
                                  <ul>
                                    <li>
-                                     <a href="http://www.ed.ac.uk/about/website/accessibility">Accessibility</a>
+                                     <a href="https://www.ed.ac.uk/about/website/accessibility">Accessibility</a>
                                    </li>
                                    <li>
-                                     <a href="http://www.ed.ac.uk/about/website/privacy">Cookies</a>
+                                     <a href="https://www.ed.ac.uk/about/website/privacy">Cookies</a>
                                    </li>
 
                                    <li>
@@ -149,9 +149,9 @@
                                </div>
                                <div id="footer-2-col-2">
                                  <ul>
-                                   <li><a href="http://www.ed.ac.uk/information-services/research-support/data-library/contact-us">Contact Us</a></li>
-                                   <li><a href="http://www.ed.ac.uk/information-services/research-support/data-library/data-repository/service-policies/service-level-definition">Service level definition</a></li>
-                                   <li><a href="http://www.ed.ac.uk/about/website/freedom-information">Freedom of information</a></li>
+                                   <li><a href="https://www.ed.ac.uk/information-services/research-support/data-library/contact-us">Contact Us</a></li>
+                                   <li><a href="https://www.ed.ac.uk/information-services/research-support/data-library/data-repository/service-policies/service-level-definition">Service level definition</a></li>
+                                   <li><a href="https://www.ed.ac.uk/about/website/freedom-information">Freedom of information</a></li>
                                  </ul>
                                </div>
                                <div id="footer-2-col-3">The University of Edinburgh is a charitable body, registered in Scotland, with registration number SC005336, VAT Registration Number GB 592 9507 00, and is acknowledged by the UK authorities as a “Recognised body” which has been granted degree awarding powers.</div>
@@ -378,7 +378,7 @@
                     </div>
 
                     <div id="header-eduni" class="navbar-header hidden-xs">
-                      <a href="http://www.ed.ac.uk/home" class="navbar-brand">
+                      <a href="https://www.ed.ac.uk/" class="navbar-brand">
                         <img alt="Edinburgh DataShare" src="{$theme-path}/images/edinburgh-uni.png" />
                       </a>
                     </div>
@@ -530,10 +530,10 @@
         <div class="container">
           <div class="row">
             <div id="is-banner-text">
-              <a href="http://www.ed.ac.uk/information-services">INFORMATION SERVICES</a>
+              <a href="https://www.ed.ac.uk/information-services">INFORMATION SERVICES</a>
             </div>
             <div id="is-banner-contact-us" class="hidden-xs">
-              <a href="http://www.ed.ac.uk/information-services/research-support/data-library/contact-us">
+              <a href="https://www.ed.ac.uk/information-services/research-support/data-library/contact-us">
               <img alt="Contact Us" src="{$theme-path}/images/contact-us.png"/>
               </a>
             </div>
@@ -765,7 +765,7 @@
                 <!--       </div> -->
                 <!--       <div> -->
                 <!--         <ul> -->
-                <!--           <li><a href="http://www.ed.ac.uk/information-services/research-support/data-library/contact-us">Contact Us</a></li> -->
+                <!--           <li><a href="https://www.ed.ac.uk/information-services/research-support/data-library/contact-us">Contact Us</a></li> -->
                 <!--           <li>Accessibility</li> -->
                 <!--           <li>Cookies &amp; Policies</li> -->
                 <!--         </ul> -->
