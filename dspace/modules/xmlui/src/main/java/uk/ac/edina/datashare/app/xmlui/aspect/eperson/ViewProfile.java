@@ -15,9 +15,10 @@ import org.dspace.app.xmlui.wing.element.Body;
 import org.dspace.app.xmlui.wing.element.Division;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.core.Context;
+import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.service.SwordKeyService;
 import org.xml.sax.SAXException;
 
-import uk.ac.edina.datashare.db.DbQuery;
 
 /**
  * Add SWORD key to DataShare user profile page. 
@@ -41,7 +42,8 @@ public class ViewProfile extends AbstractDSpaceTransformer{
         
         try{
             Context context = ContextUtil.obtainContext(objectModel);
-            this.swordkey = DbQuery.fetchSwordKey(context);
+            SwordKeyService swordKeyService = ContentServiceFactory.getInstance().getSwordKeyService();
+            this.swordkey = swordKeyService.fetchSwordKey(context);
         }
         catch(SQLException ex){
             throw new RuntimeException(ex);

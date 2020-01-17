@@ -13,16 +13,17 @@ import org.apache.cocoon.environment.Redirector;
 import org.apache.cocoon.environment.Request;
 import org.apache.cocoon.environment.SourceResolver;
 import org.apache.log4j.Logger;
-import org.dspace.app.itemimport.ItemImport;
+import org.dspace.app.itemimport.factory.ItemImportServiceFactory;
+import org.dspace.app.itemimport.service.ItemImportService;
 import org.dspace.app.xmlui.utils.ContextUtil;
 import org.dspace.content.Bundle;
 import org.dspace.content.Item;
 import org.dspace.content.LicenseUtils;
+import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.service.BatchImportService;
 import org.dspace.core.Context;
 import org.dspace.eperson.EPerson;
 
-import uk.ac.edina.datashare.db.DbQuery;
-import uk.ac.edina.datashare.db.DbUpdate;
 
 /**
  * Attempt to agree to the terms of the Depositor Agreement.
@@ -30,6 +31,8 @@ import uk.ac.edina.datashare.db.DbUpdate;
 public class DepositAgreeAction  extends AbstractAction{
     private static Logger LOG = Logger.getLogger(DepositAgreeAction.class);
     
+    private transient BatchImportService batchImportService = ContentServiceFactory.getInstance().getBatchImportService();
+    private transient ItemImportService itemImportService = ItemImportServiceFactory.getInstance().getItemImportService();
     /*
      * (non-Javadoc)
      * @see org.apache.cocoon.acting.Action#act(org.apache.cocoon.environment.Redirector, org.apache.cocoon.environment.SourceResolver, java.util.Map, java.lang.String, org.apache.avalon.framework.parameters.Parameters)
@@ -75,8 +78,8 @@ public class DepositAgreeAction  extends AbstractAction{
         
         if(items.size() > 0){
             for (Item item : items) {
-                Bundle licences[] = item.getBundles("LICENSE"); 
-                if(licences.length == 0){
+            	List<Bundle> licences = item.getBundles("LICENSE"); 
+                if(licences.size() == 0){
                     try{
                         context.turnOffAuthorisationSystem();
                         
@@ -106,7 +109,7 @@ public class DepositAgreeAction  extends AbstractAction{
         }
         
         if(batchId != null && map.size() == 0){
-            DbUpdate.deleteBatchImport(context, Integer.parseInt(batchId));
+        	batchImportService.deleteBatchImport(context, Integer.parseInt(batchId));
         }
         
         return map;
@@ -154,11 +157,10 @@ public class DepositAgreeAction  extends AbstractAction{
      */
     private void agreeToBatch(Context context, EPerson user, String id, Map<String, String> map, List<Item> items){ 
         try{
-            int iId = Integer.parseInt(id);
-            String mapFile = DbQuery.fetchBatchMapFile(context, iId);
+            String mapFile = batchImportService.fetchBatchMapFile(context, id);
             LOG.info("using mapfile " + mapFile);
             try{
-                Map<String, String> files = ItemImport.readMapFile(mapFile);
+                Map<String, String> files = ItemImportService.readMapFile(mapFile);
                 for(String itemId : files.values()) {
                     Item item = agreeToItem(context, user, itemId, map);
                     

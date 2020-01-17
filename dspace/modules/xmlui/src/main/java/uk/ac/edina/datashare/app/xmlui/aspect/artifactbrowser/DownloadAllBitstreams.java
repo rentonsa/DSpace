@@ -25,14 +25,18 @@ import org.apache.cocoon.environment.SourceResolver;
 import org.apache.cocoon.reading.AbstractReader;
 import org.apache.log4j.Logger;
 import org.dspace.app.xmlui.utils.ContextUtil;
-import org.dspace.authorize.AuthorizeManager;
+import org.dspace.authorize.factory.AuthorizeServiceFactory;
+import org.dspace.authorize.service.AuthorizeService;
 import org.dspace.content.Bitstream;
+import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.service.BitstreamService;
 import org.dspace.content.Bundle;
 import org.dspace.content.Item;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
-import org.dspace.handle.HandleManager;
+import org.dspace.handle.factory.HandleServiceFactory;
+import org.dspace.handle.service.HandleService;
 import org.xml.sax.SAXException;
 
 public class DownloadAllBitstreams extends AbstractReader implements Recyclable
@@ -44,6 +48,11 @@ public class DownloadAllBitstreams extends AbstractReader implements Recyclable
     
     private long bitstreamSize = 0;
     private static final int EXPIRES = 60 * 60 * 60000;
+    
+    private HandleService handleService = HandleServiceFactory.getInstance().getHandleService();
+    private BitstreamService bitstreamService = ContentServiceFactory.getInstance().getBitstreamService();
+    private AuthorizeService authorizeService = AuthorizeServiceFactory.getInstance().getAuthorizeService();
+
     
     /*
      * (non-Javadoc)
@@ -64,7 +73,7 @@ public class DownloadAllBitstreams extends AbstractReader implements Recyclable
             Context context = ContextUtil.obtainContext(objectModel);
             
             // get the item from handle
-            Object dso = HandleManager.resolveToObject(
+            Object dso = handleService.resolveToObject(
                     context,
                     par.getParameter("handle"));
             
@@ -74,22 +83,22 @@ public class DownloadAllBitstreams extends AbstractReader implements Recyclable
                 
                 if(org.dspace.app.util.Util.allowDownloadAll(context, item))
                 {
-                    Bundle bundle[] = item.getBundles();
+                    List<Bundle> bundles = item.getBundles();
                     this.files = new ArrayList<Bitstream>();
               
                     // loop round bundles, there should be two - files and licences
-                    for(int i = 0; i < bundle.length; i++)
+                    for(Bundle bundle : bundles)
                     {
                         // now get the actual bitstreams
-                        Bitstream bitstreams[] = bundle[i].getBitstreams();
+                        List<Bitstream> bitstreams = bundle.getBitstreams();
                         
-                        for(int j = 0; j < bitstreams.length; j++)
+                        for(Bitstream bitstream : bitstreams)
                         {
                             // only add bitstream if valid 
-                            if(validBitstream(context, bitstreams[j]))
+                            if(validBitstream(context, bitstream))
                             {
-                                this.files.add(bitstreams[j]);
-                                this.bitstreamSize += bitstreams[j].getSize();
+                                this.files.add(bitstream);
+                                this.bitstreamSize += bitstream.getSizeBytes();
                             }
                         }
                     }
@@ -160,6 +169,7 @@ public class DownloadAllBitstreams extends AbstractReader implements Recyclable
             
             ZipOutputStream zip = new ZipOutputStream(out);
             zip.setLevel(0);
+             
             
             // put each file in zip
             for(Bitstream file : this.files)
@@ -169,7 +179,7 @@ public class DownloadAllBitstreams extends AbstractReader implements Recyclable
                 
                 try
                 {
-                    read(file.retrieve(), zip);
+                    read(bitstreamService.retrieve(new Context(), file), zip);
                 }
                 catch(Exception ex)
                 {
@@ -236,7 +246,7 @@ public class DownloadAllBitstreams extends AbstractReader implements Recyclable
         {
             try
             {
-                valid = AuthorizeManager.authorizeActionBoolean(
+                valid = authorizeService.authorizeActionBoolean(
                         context,
                         bitstream,
                         Constants.READ);
