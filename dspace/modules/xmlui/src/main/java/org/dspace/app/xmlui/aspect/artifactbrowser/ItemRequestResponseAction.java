@@ -43,6 +43,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// DATASHARE - start
+import com.sun.mail.smtp.SMTPSendFailedException;
+import java.net.SocketException;
+
+import org.dspace.utils.DSpace;
+import org.dspace.app.requestitem.service.RequestItemService;
+import org.dspace.content.service.BitstreamService;
+import org.dspace.content.service.ItemService;
+// DATASHARE - end
 
 /**
  * 
@@ -57,6 +66,10 @@ public class ItemRequestResponseAction extends AbstractAction
     protected HandleService handleService = HandleServiceFactory.getInstance().getHandleService();
     protected ItemService itemService = ContentServiceFactory.getInstance().getItemService();
     protected BitstreamStorageService bitstreamStorageService = StorageServiceFactory.getInstance().getBitstreamStorageService();
+
+    // Datashare - start
+    protected BitstreamService bitstreamService = ContentServiceFactory.getInstance().getBitstreamService();
+    // Datashare - end
 
 	/** log4j log */
     private static Logger log = Logger.getLogger(ItemRequestResponseAction.class);
@@ -300,13 +313,13 @@ public class ItemRequestResponseAction extends AbstractAction
     	// ds.not-emailable.item for Item or
     	// ds.not-emailable.bitstream for bitstream.
     	try {
-    		if (requestItem.isAllfiles() && item.getMetadata(ITEM_NOT_EMAILABLE_METADATA_TAG) != null){
-    			log.debug(ITEM_NOT_EMAILABLE_METADATA_TAG + ": " + item.getMetadata(ITEM_NOT_EMAILABLE_METADATA_TAG));
+    		if (requestItem.isAllfiles() && itemService.getMetadata(item, ITEM_NOT_EMAILABLE_METADATA_TAG) != null){
+    			log.debug(ITEM_NOT_EMAILABLE_METADATA_TAG + ": " + itemService.getMetadata(item, ITEM_NOT_EMAILABLE_METADATA_TAG));
     			return false;
     		} else {
-    			Bitstream bit = Bitstream.find(context, requestItem.getBitstreamId());
-    			if (bit != null && bit.getMetadata(BITSTREAM_NOT_EMAILABLE_METADATA_TAG) != null) {
-    				log.debug(BITSTREAM_NOT_EMAILABLE_METADATA_TAG + ": " + item.getMetadata(BITSTREAM_NOT_EMAILABLE_METADATA_TAG));
+    			Bitstream bit = requestItem.getBitstream();
+    			if (bit != null && bitstreamService.getMetadata(bit, BITSTREAM_NOT_EMAILABLE_METADATA_TAG) != null) {
+    				log.debug(BITSTREAM_NOT_EMAILABLE_METADATA_TAG + ": " + itemService.getMetadata(item, BITSTREAM_NOT_EMAILABLE_METADATA_TAG));
     			 return false;
     			}
     		}
@@ -314,8 +327,6 @@ public class ItemRequestResponseAction extends AbstractAction
     		// Do nothing as it means that the requested item does not have
     		// either of the not emailable metadata tags:
     		// ds.not-emailable.item or ds.not-emailable.bitstream
-    	} catch (SQLException sqle) {
-    		// Do nothing (should not happen) 
     	}
     	
     	return true;

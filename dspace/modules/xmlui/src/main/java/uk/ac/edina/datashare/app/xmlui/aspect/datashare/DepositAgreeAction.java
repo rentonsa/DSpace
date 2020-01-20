@@ -1,10 +1,14 @@
 package uk.ac.edina.datashare.app.xmlui.aspect.datashare;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.UUID;
 
 import org.apache.avalon.framework.parameters.Parameters;
 import org.apache.cocoon.acting.AbstractAction;
@@ -21,6 +25,7 @@ import org.dspace.content.Item;
 import org.dspace.content.LicenseUtils;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.BatchImportService;
+import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
 import org.dspace.eperson.EPerson;
 
@@ -33,6 +38,8 @@ public class DepositAgreeAction  extends AbstractAction{
     
     private transient BatchImportService batchImportService = ContentServiceFactory.getInstance().getBatchImportService();
     private transient ItemImportService itemImportService = ItemImportServiceFactory.getInstance().getItemImportService();
+    private transient ItemService itemService = ContentServiceFactory.getInstance().getItemService();
+
     /*
      * (non-Javadoc)
      * @see org.apache.cocoon.acting.Action#act(org.apache.cocoon.environment.Redirector, org.apache.cocoon.environment.SourceResolver, java.util.Map, java.lang.String, org.apache.avalon.framework.parameters.Parameters)
@@ -109,7 +116,7 @@ public class DepositAgreeAction  extends AbstractAction{
         }
         
         if(batchId != null && map.size() == 0){
-        	batchImportService.deleteBatchImport(context, Integer.parseInt(batchId));
+        	batchImportService.deleteBatchImport(context, batchId);
         }
         
         return map;
@@ -128,7 +135,7 @@ public class DepositAgreeAction  extends AbstractAction{
         Item item = null;
         
         try{
-            item = Item.find(context, Integer.parseInt(id)); 
+            item = itemService.findByIdOrLegacyId(context, id); 
             if(item != null){
                 // validate user is owner
                 if(!item.getSubmitter().equals(user)){
@@ -160,7 +167,7 @@ public class DepositAgreeAction  extends AbstractAction{
             String mapFile = batchImportService.fetchBatchMapFile(context, id);
             LOG.info("using mapfile " + mapFile);
             try{
-                Map<String, String> files = ItemImportService.readMapFile(mapFile);
+                Map<String, String> files = readMapFile(mapFile);
                 for(String itemId : files.values()) {
                     Item item = agreeToItem(context, user, itemId, map);
                     
@@ -185,5 +192,62 @@ public class DepositAgreeAction  extends AbstractAction{
         catch(NumberFormatException ex){
             map.put("result", "Invalid batch id: " + id);
         }
+        catch(SQLException ex){
+            LOG.error(ex);
+            map.put("result", "Database problem finding batch: " + ex.getMessage());
+        }
     }
+    
+    // Note: Copy of protected method in ItemImportServiceImpl.
+    private Map<String, String> readMapFile(String filename) throws Exception
+    {
+        Map<String, String> myHash = new HashMap<>();
+
+        BufferedReader is = null;
+        try
+        {
+            is = new BufferedReader(new FileReader(filename));
+
+            String line;
+
+            while ((line = is.readLine()) != null)
+            {
+                String myFile;
+                String myHandle;
+
+                // a line should be archive filename<whitespace>handle
+                StringTokenizer st = new StringTokenizer(line);
+
+                if (st.hasMoreTokens())
+                {
+                    myFile = st.nextToken();
+                }
+                else
+                {
+                    throw new Exception("Bad mapfile line:\n" + line);
+                }
+
+                if (st.hasMoreTokens())
+                {
+                    myHandle = st.nextToken();
+                }
+                else
+                {
+                    throw new Exception("Bad mapfile line:\n" + line);
+                }
+
+                myHash.put(myFile, myHandle);
+            }
+        }
+        finally
+        {
+            if (is != null)
+            {
+                is.close();
+            }
+        }
+
+        return myHash;
+    }
+
 }

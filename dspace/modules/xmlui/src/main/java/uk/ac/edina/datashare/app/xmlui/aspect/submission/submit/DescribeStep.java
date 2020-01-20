@@ -75,7 +75,7 @@ public class DescribeStep extends org.dspace.app.xmlui.aspect.submission.submit.
     {  
     	if(DSpaceUtils.getDepositor(submissionInfo).length() == 0){
     		// pre-populate depositor with user name
-    		DSpaceUtils.setDepositor(submissionInfo, context.getCurrentUser());
+    		DSpaceUtils.setDepositor(context, submissionInfo.getSubmissionItem().getItem(), context.getCurrentUser());
     	}
     	
     	submission.setMultipleTitles(true);
@@ -349,7 +349,7 @@ public class DescribeStep extends org.dspace.app.xmlui.aspect.submission.submit.
             DCDate value = DSpaceUtils.getEmbargoValue(submissionInfo);
             
             describeSection.addLabel("Citation");
-            describeSection.addItem(MetaDataUtil.getCitation(submissionInfo));
+            describeSection.addItem(MetaDataUtil.getCitation(submissionInfo.getSubmissionItem().getItem()));
             
             if(value != null)
             {
@@ -375,25 +375,24 @@ public class DescribeStep extends org.dspace.app.xmlui.aspect.submission.submit.
      * @param field
      * @throws WingException
      */
-    @Override
-    protected void setFieldError(DCInput dcInput, Field field) throws WingException{
-        switch(errorFlag){
-            case Consts.EMBARGO_IN_THE_PAST:{
-                field.addError(message("embargo.control.past"));
-                break;
-            }
-            case Consts.EMBARGO_TOO_FAR_IN_FUTURE:{
-                field.addError(message("embargo.control.future"));
-                break;
-            }
-            case Consts.INVALID_EMBARGO_STRING:{
-                field.addError(message("embargo.control.invalid"));
-                break;
-            }
-            default:{
-                super.setFieldError(dcInput, field);
-            }
-        }
-    }
+//    protected void setFieldError(DCInput dcInput, Field field) throws WingException{
+//        switch(errorFlag){
+//            case Consts.EMBARGO_IN_THE_PAST:{
+//                field.addError(message("embargo.control.past"));
+//                break;
+//            }
+//            case Consts.EMBARGO_TOO_FAR_IN_FUTURE:{
+//                field.addError(message("embargo.control.future"));
+//                break;
+//            }
+//            case Consts.INVALID_EMBARGO_STRING:{
+//                field.addError(message("embargo.control.invalid"));
+//                break;
+//            }
+//            default:{
+//                super.setFieldError(dcInput, field);
+//            }
+//        }
+//    }
 
 }

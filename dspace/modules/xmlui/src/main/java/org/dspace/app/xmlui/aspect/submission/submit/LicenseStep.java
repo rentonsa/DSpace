@@ -25,6 +25,10 @@ import org.dspace.content.LicenseUtils;
 import org.dspace.core.LogManager;
 import org.xml.sax.SAXException;
 
+// DATASHARE - start
+import org.dspace.app.xmlui.wing.element.Para;
+// DATASHARE -end
+
 /**
  * This is the last step of the item submission processes. During this
  * step the user must agree to the collection's standard distribution

@@ -79,6 +79,7 @@ public class SearchFacetFilter extends AbstractDSpaceTransformer implements Cach
     // private int DEFAULT_PAGE_SIZE = 20;
     private int DEFAULT_PAGE_SIZE = 20;
     // DATASHARE - end
+    private int currentOffset = 0;
 
     private SearchService searchService = null;
     private static final Message T_go = message("xmlui.general.go");
