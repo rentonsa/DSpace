@@ -40,7 +40,8 @@ public class ShareGeoHandleServiceImpl implements ShareGeoHandleService {
 	protected ConfigurationService configurationService;
 
 	/** Public Constructor */
-	protected ShareGeoHandleServiceImpl() {
+	public ShareGeoHandleServiceImpl() {
+		super();
 	}
 
 	/**

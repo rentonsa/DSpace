@@ -8,7 +8,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.factory.DatashareContentServiceFactory;
 import org.dspace.content.service.BatchImportService;
 import org.dspace.core.Constants;
 import org.dspace.eperson.EPerson;
@@ -77,7 +77,7 @@ public class BatchImport extends DSpaceObject implements DSpaceObjectLegacySuppo
     {
         if(batchImportService == null)
         {
-        	batchImportService = ContentServiceFactory.getInstance().getBatchImportService();
+        	batchImportService = DatashareContentServiceFactory.getInstance().getBatchImportService();
         }
         return batchImportService;
     }

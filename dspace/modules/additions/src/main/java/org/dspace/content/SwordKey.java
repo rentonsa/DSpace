@@ -9,7 +9,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.factory.DatashareContentServiceFactory;
 import org.dspace.content.service.SwordKeyService;
 import org.dspace.core.Constants;
 import org.dspace.eperson.EPerson;
@@ -62,7 +62,7 @@ public class SwordKey extends DSpaceObject {
     {
 		if(swordKeyService == null)
         {
-        	swordKeyService = ContentServiceFactory.getInstance().getSwordKeyService();
+        	swordKeyService = DatashareContentServiceFactory.getInstance().getSwordKeyService();
         }
         return swordKeyService;
     }

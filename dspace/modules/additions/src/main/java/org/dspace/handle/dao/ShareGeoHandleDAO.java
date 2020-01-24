@@ -9,6 +9,8 @@ package org.dspace.handle.dao;
 
 import java.sql.SQLException;
 
+import org.apache.log4j.Logger;
+import org.dspace.content.dao.impl.BatchImportDAOImpl;
 import org.dspace.core.Context;
 import org.dspace.core.GenericDAO;
 import org.dspace.handle.ShareGeoHandle;

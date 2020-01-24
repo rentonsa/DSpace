@@ -22,6 +22,6 @@
     <!-- ******************** -->
     <!-- Factory declarations -->
     <!-- ******************** -->
-     <bean id="contentServiceFactory" class="org.dspace.content.factory.ContentServiceFactoryImpl"/>
+     <bean id="datashareContentServiceFactory" class="org.dspace.content.factory.DatashareContentServiceFactoryImpl"/>
     
 </beans>

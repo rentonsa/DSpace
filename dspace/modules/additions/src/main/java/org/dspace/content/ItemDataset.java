@@ -22,6 +22,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.factory.DatashareContentServiceFactory;
 import org.dspace.content.service.BitstreamService;
 import org.dspace.content.service.DatasetService;
 import org.dspace.content.service.ItemService;
@@ -163,7 +164,7 @@ public class ItemDataset  {
 		} else {
 			String fp = zip.toString();
 			String fname = fp.substring(fp.lastIndexOf('/') + 1);
-			DatasetService datasetService = ContentServiceFactory.getInstance().getDatasetService();
+			DatasetService datasetService = DatashareContentServiceFactory.getInstance().getDatasetService();
 			try {
 				datasetService.deleteDataset(context, fname);
 			} catch (SQLException e) {
@@ -191,7 +192,7 @@ public class ItemDataset  {
 	}
 
 	public String getChecksum() throws SQLException {
-		DatasetService datasetService = ContentServiceFactory.getInstance().getDatasetService();
+		DatasetService datasetService = DatashareContentServiceFactory.getInstance().getDatasetService();
 		return datasetService.fetchDatasetChecksum(context, item);
 	}
 
@@ -305,7 +306,7 @@ public class ItemDataset  {
 					String cksum = createChecksum(context);
 
 					LOG.info("zip complete");
-					DatasetService datasetService = ContentServiceFactory.getInstance().getDatasetService();
+					DatasetService datasetService = DatashareContentServiceFactory.getInstance().getDatasetService();
 					datasetService.insertDataset(context, item.getID(), getFileName(), cksum);
 				} else {
 					ItemDataset.LOG.warn("Zip creation for " + item.getHandle() + " not allowed.");

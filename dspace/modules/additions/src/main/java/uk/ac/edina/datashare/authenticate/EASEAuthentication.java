@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.dspace.authenticate.AuthenticationMethod;
-import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.factory.DatashareContentServiceFactory;
 import org.dspace.content.service.UUN2EmailService;
 import org.dspace.core.Context;
 import org.dspace.eperson.EPerson;
@@ -88,8 +88,8 @@ public class EASEAuthentication implements AuthenticationMethod {
 	 */
 	public void initEPerson(Context context, HttpServletRequest request, EPerson eperson) throws SQLException {
 		String email = eperson.getEmail();
-//		DatasetService datasetService = ContentServiceFactory.getInstance().getDatasetService();
-		UUN2EmailService uun2EmailService = ContentServiceFactory.getInstance().getUUN2EmailService();
+
+		UUN2EmailService uun2EmailService = DatashareContentServiceFactory.getInstance().getUUN2EmailService();
 		String uun = uun2EmailService.fetchUUN(context, email);
 
 		if (uun != null) {

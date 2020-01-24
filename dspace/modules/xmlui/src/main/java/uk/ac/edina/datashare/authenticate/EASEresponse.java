@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 import org.dspace.app.xmlui.utils.AuthenticationUtil;
 import org.dspace.app.xmlui.utils.ContextUtil;
 import org.dspace.authorize.AuthorizeException;
-import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.factory.DatashareContentServiceFactory;
 import org.dspace.core.Context;
 import org.dspace.eperson.EPerson;
 import org.dspace.eperson.factory.EPersonServiceFactory;
@@ -43,7 +43,7 @@ public class EASEresponse extends CosignServletCallbackHandler
 
 	private EPersonService epersonService = EPersonServiceFactory.getInstance().getEPersonService();
 
-	private SwordKeyService swordKeyService = ContentServiceFactory.getInstance().getSwordKeyService();
+	private SwordKeyService swordKeyService = DatashareContentServiceFactory.getInstance().getSwordKeyService();
 
 	/**
 	 * User has successfully logged into EASE, determine if the user has a

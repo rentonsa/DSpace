@@ -15,7 +15,7 @@ import org.dspace.app.xmlui.wing.element.Body;
 import org.dspace.app.xmlui.wing.element.Division;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.core.Context;
-import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.factory.DatashareContentServiceFactory;
 import org.dspace.content.service.SwordKeyService;
 import org.xml.sax.SAXException;
 
@@ -42,7 +42,7 @@ public class ViewProfile extends AbstractDSpaceTransformer{
         
         try{
             Context context = ContextUtil.obtainContext(objectModel);
-            SwordKeyService swordKeyService = ContentServiceFactory.getInstance().getSwordKeyService();
+            SwordKeyService swordKeyService = DatashareContentServiceFactory.getInstance().getSwordKeyService();
             this.swordkey = swordKeyService.fetchSwordKey(context);
         }
         catch(SQLException ex){

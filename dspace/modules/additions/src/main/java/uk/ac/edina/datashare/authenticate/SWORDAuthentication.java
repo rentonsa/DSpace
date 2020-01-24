@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.dspace.authenticate.AuthenticationMethod;
-import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.factory.DatashareContentServiceFactory;
 import org.dspace.content.service.SwordKeyService;
 import org.dspace.core.Context;
 import org.dspace.eperson.EPerson;
@@ -108,7 +108,7 @@ public class SWORDAuthentication implements AuthenticationMethod {
 			}
 
 			if (eperson != null) {
-				SwordKeyService swordKeyService = ContentServiceFactory.getInstance().getSwordKeyService();
+				SwordKeyService swordKeyService = DatashareContentServiceFactory.getInstance().getSwordKeyService();
 				String key = swordKeyService.fetchSwordKey(context, eperson);
 				if (key != null && key.equals(password)) {
 					status = SUCCESS;

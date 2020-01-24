@@ -7,7 +7,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.factory.DatashareContentServiceFactory;
 import org.dspace.content.service.DatasetService;
 import org.dspace.core.Constants;
 
@@ -127,7 +127,7 @@ public class Dataset extends DSpaceObject implements DSpaceObjectLegacySupport {
     {
         if(datasetService == null)
         {
-        	datasetService = ContentServiceFactory.getInstance().getDatasetService();
+        	datasetService = DatashareContentServiceFactory.getInstance().getDatasetService();
         }
         return datasetService;
     }

@@ -24,6 +24,7 @@ import org.dspace.content.Bundle;
 import org.dspace.content.Item;
 import org.dspace.content.LicenseUtils;
 import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.factory.DatashareContentServiceFactory;
 import org.dspace.content.service.BatchImportService;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
@@ -36,7 +37,7 @@ import org.dspace.eperson.EPerson;
 public class DepositAgreeAction  extends AbstractAction{
     private static Logger LOG = Logger.getLogger(DepositAgreeAction.class);
     
-    private transient BatchImportService batchImportService = ContentServiceFactory.getInstance().getBatchImportService();
+    private transient BatchImportService batchImportService = DatashareContentServiceFactory.getInstance().getBatchImportService();
     private transient ItemImportService itemImportService = ItemImportServiceFactory.getInstance().getItemImportService();
     private transient ItemService itemService = ContentServiceFactory.getInstance().getItemService();
 

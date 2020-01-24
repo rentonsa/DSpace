@@ -6,7 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.factory.DatashareContentServiceFactory;
 import org.dspace.content.service.UUN2EmailService;
 import org.dspace.core.Constants;
 
@@ -58,7 +58,7 @@ public class UUN2Email extends DSpaceObject {
     {
         if(uun2EmailService == null)
         {
-        	uun2EmailService = ContentServiceFactory.getInstance().getUUN2EmailService();
+        	uun2EmailService = DatashareContentServiceFactory.getInstance().getUUN2EmailService();
         }
         return uun2EmailService;
     }
