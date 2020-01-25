@@ -8,26 +8,25 @@
     http://www.dspace.org/license/
 
 -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans
+<beans xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:context="http://www.springframework.org/schema/context" xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
            http://www.springframework.org/schema/context
-           http://www.springframework.org/schema/context/spring-context-2.5.xsd"
-    default-autowire-candidates="*Service,*DAO,javax.sql.DataSource">
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
-    <context:annotation-config /> <!-- allows us to use spring annotations in beans -->
+    <context:annotation-config />
+    <!-- allows us to use spring annotations in beans -->
 
     <!-- ******************** -->
     <!-- Service declarations -->
     <!-- ******************** -->
-    <bean class="org.dspace.content.BatchImportServiceImpl"/>
-    <bean class="org.dspace.content.DatasetServiceImpl"/>
-    <bean class="org.dspace.content.SwordKeyServiceImpl"/>
-    <bean class="org.dspace.content.UUN2EmailServiceImpl"/>
-    
-    
-    <bean class="org.dspace.handle.HandleServiceImpl"/>
+    <bean id="batchImportService" class="org.dspace.content.BatchImportServiceImpl" depends-on="batchImportDAO"/>
+    <bean id="datasetService" class="org.dspace.content.DatasetServiceImpl" depends-on="datasetDAO"/>
+    <bean id="swordKeyService" class="org.dspace.content.SwordKeyServiceImpl" depends-on="swordKeyDAO"/>
+    <bean id="uUN2EmailService" class="org.dspace.content.UUN2EmailServiceImpl" depends-on="uUN2EmailDAO"/>
 
+    <!--  Don't think it is used
+    <bean id="shareGeoHandleService" class="org.dspace.handle.ShareGeoHandleServiceImpl" depends-on="shareGeoHandleDAO"/>
+    -->
 </beans>

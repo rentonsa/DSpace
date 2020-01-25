@@ -8,27 +8,27 @@
     http://www.dspace.org/license/
 
 -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans
+<beans xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:context="http://www.springframework.org/schema/context" xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
            http://www.springframework.org/schema/context
-           http://www.springframework.org/schema/context/spring-context-2.5.xsd"
-    default-autowire-candidates="*Service,*DAO,javax.sql.DataSource">
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
-    <context:annotation-config /> <!-- allows us to use spring annotations in beans -->
+    <context:annotation-config />
+    <!-- allows us to use spring annotations in beans -->
 
     <!-- **************** -->
     <!-- DAO declarations -->
     <!-- **************** -->
+
+    <bean id="batchImportDAO" class="org.dspace.content.dao.impl.BatchImportDAOImpl"/>
+    <bean id="datasetDAO" class="org.dspace.content.dao.impl.DatasetDAOImpl"/>
+    <bean id="swordKeyDAO" class="org.dspace.content.dao.impl.SwordKeyDAOImpl"/>
+    <bean id="uUU2EmailDAO" class="org.dspace.content.dao.impl.UUN2EmailDAOImpl"/>
     
-    <bean class="org.dspace.content.dao.impl.BatchImportDAOImpl"/>
-    <bean class="org.dspace.content.dao.impl.DatasetDAOImpl"/>
-    <bean class="org.dspace.content.dao.impl.SwordKeyDAOImpl"/>
-    <bean class="org.dspace.content.dao.impl.UUN2EmailDAOImpl"/>
-    
-    <bean class="org.dspace.handle.dao.impl.ShareGeoHandleDAOImpl"/>
-    
+    <!-- Don't think it is used
+    <bean id="shareGeoHandleDAO" class="org.dspace.handle.dao.impl.ShareGeoHandleDAOImpl"/>
+    -->
 
 </beans>
