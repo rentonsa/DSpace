@@ -15,7 +15,7 @@ import org.dspace.core.AbstractHibernateDSODAO;
 public class SwordKeyDAOImpl extends AbstractHibernateDSODAO<SwordKey> implements SwordKeyDAO {
 	private static final Logger log = Logger.getLogger(SwordKeyDAOImpl.class);
 
-	public SwordKeyDAOImpl()
+	protected SwordKeyDAOImpl()
 	{
 		super();
 	}

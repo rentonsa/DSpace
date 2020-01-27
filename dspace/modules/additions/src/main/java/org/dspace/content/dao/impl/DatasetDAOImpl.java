@@ -9,7 +9,7 @@ import org.dspace.core.AbstractHibernateDSODAO;
 public class DatasetDAOImpl extends AbstractHibernateDSODAO<Dataset> implements DatasetDAO {
 	private static final Logger log = Logger.getLogger(DatasetDAOImpl.class);
 
-	public DatasetDAOImpl()
+	protected DatasetDAOImpl()
 	{
 		super();
 	}

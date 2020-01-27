@@ -25,7 +25,7 @@
     <bean id="batchImportDAO" class="org.dspace.content.dao.impl.BatchImportDAOImpl"/>
     <bean id="datasetDAO" class="org.dspace.content.dao.impl.DatasetDAOImpl"/>
     <bean id="swordKeyDAO" class="org.dspace.content.dao.impl.SwordKeyDAOImpl"/>
-    <bean id="uUU2EmailDAO" class="org.dspace.content.dao.impl.UUN2EmailDAOImpl"/>
+    <bean id="uUN2EmailDAO" class="org.dspace.content.dao.impl.UUN2EmailDAOImpl"/>
     
     <!-- Don't think it is used
     <bean id="shareGeoHandleDAO" class="org.dspace.handle.dao.impl.ShareGeoHandleDAOImpl"/>

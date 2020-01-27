@@ -16,7 +16,7 @@ public class BatchImportDAOImpl extends AbstractHibernateDSODAO<BatchImport> imp
 
 	private static final Logger log = Logger.getLogger(BatchImportDAOImpl.class);
 
-	public BatchImportDAOImpl()
+	protected BatchImportDAOImpl()
 	{
 		super();
 	}

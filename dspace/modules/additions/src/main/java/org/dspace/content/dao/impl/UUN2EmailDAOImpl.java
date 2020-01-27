@@ -15,7 +15,7 @@ import org.dspace.core.AbstractHibernateDSODAO;
 public class UUN2EmailDAOImpl extends AbstractHibernateDSODAO<UUN2Email> implements UUN2EmailDAO {
 	private static final Logger log = Logger.getLogger(UUN2EmailDAOImpl.class);
 
-	public UUN2EmailDAOImpl()
+	protected UUN2EmailDAOImpl()
 	{
 		super();
 	}
