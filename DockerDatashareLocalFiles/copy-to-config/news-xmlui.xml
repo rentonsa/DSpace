@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<document version="1.1" xmlns="http://di.tamu.edu/DRI/1.0/" xmlns:i18n="http://apache.org/cocoon/i18n/2.1">
+  <body>
+    <div id="file.news.div.welcome" n="news" rend="primary">
+      <head>
+        What is Edinburgh DataShare?
+      </head>
+      <p>
+        Edinburgh DataShare is a digital repository of research data produced at the University of Edinburgh, hosted by
+        <xref target="http://www.ed.ac.uk/information-services">Information Services</xref>.  Edinburgh University researchers who have produced research data associated with an existing or forthcoming publication, or which has potential use for other researchers, are invited to upload their dataset for sharing and safekeeping. A persistent identifier and suggested citation will be provided.
+      </p>
+      <!--<p rend="important-para">
+          Please note the system will be going down for maintainance on 25 Aug 27th at 08.30-09.00 and 17.30-20.00 GMT
+          </p>-->
+      <!--<p rend="important-para">
+          Please note the system will be at risk on Fri 23rd Feb between 09.00 and 10.00 GMT
+      </p>-->
+    </div>
+    <div id="home-welcome-deposit">
+      <head>
+        Deposit Your Data
+      </head>
+      <div id="upload-data">
+        <figure source="/themes/Mirage2/images/deposit.png" target="/handle/123456789/3/submit">
+        Deposit Your Data
+        </figure>
+      </div>
+      <div>
+        <list>
+          <item>
+            <xref target="http://www.ed.ac.uk/schools-departments/information-services/research-support/data-library/data-repository/how-to-deposit">
+              How to deposit
+            </xref>
+          </item>
+          <item>
+            <xref target="http://www.ed.ac.uk/schools-departments/information-services/research-support/data-library/data-repository/checklist">
+              Checklist for deposit
+            </xref>
+          </item>
+          <item>
+            <xref target="http://www.ed.ac.uk/schools-departments/information-services/research-support/data-library/data-repository/benefits">
+              Benefits of deposit
+            </xref>
+          </item>
+        </list>
+      </div>
+    </div>
+    <div id="about-datashare">
+      <head>
+        About Edinburgh DataShare
+      </head>
+      <div>
+        <list>
+          <item>
+            <xref target="http://www.ed.ac.uk/schools-departments/information-services/research-support/data-library/data-repository/definitions">
+              Our definitions
+            </xref>
+          </item>
+          <item>
+            <xref target="http://www.ed.ac.uk/schools-departments/information-services/research-support/data-library/data-repository/service-policies">
+              Service policies
+            </xref>
+          </item>
+
+          <item>
+            <xref target="http://www.ed.ac.uk/schools-departments/information-services/research-support/data-library/data-repository/service-background">
+              Service background
+            </xref>
+          </item>
+        </list>
+      </div>
+    </div>
+  </body>
+  <options/>
+  <meta>
+    <userMeta/>
+    <pageMeta/>
+    <repositoryMeta/>
+  </meta>
+</document>

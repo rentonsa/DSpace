@@ -23,10 +23,12 @@ USER dspace
 ADD --chown=dspace . /app/
 COPY dspace/src/main/docker/local.cfg /app/local.cfg
 
+# DATASHARE - START
 # Add missing jars
 RUN mvn install:install-file -Dfile=MissingDspaceJars/jcosign-3.0.1.jar -DgroupId=org.edu.umich -DartifactId=jcosign -Dversion=3.0.1 -Dpackaging=jar && \
 mvn install:install-file -Dfile=MissingDspaceJars/atmire-statistics-exporter-api-1.0.0.jar -DgroupId=com.atmire -DartifactId=atmire-statistics-exporter-api -Dversion=1.0.0 -Dpackaging=jar && \
 mvn install:install-file -Dfile=MissingDspaceJars/sword2-client-0.9.2.jar -DgroupId=org.swordapp -DartifactId=sword2-client -Dversion=0.9.2 -Dpackaging=jar
+# DATASHARE - END
 
 # Build DSpace.  Copy the dspace-install directory to /install.  Clean up the build to keep the docker image small
 RUN mvn package -Dmirage2.on=true && \
@@ -48,6 +50,10 @@ RUN mkdir $ANT_HOME && \
     wget -qO- "https://archive.apache.org/dist/ant/binaries/apache-ant-$ANT_VERSION-bin.tar.gz" | tar -zx --strip-components=1 -C $ANT_HOME
 
 RUN ant init_installation update_configs update_code update_webapps update_solr_indexes
+
+# DATASHARE - START
+# Add Datashare config
+# DATASHARE - END
 
 # Step 3 - Run tomcat
 # Create a new tomcat image that does not retain the the build directory contents
