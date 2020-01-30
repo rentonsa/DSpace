@@ -58,11 +58,11 @@
     <filter-class>uk.ac.edina.datashare.authenticate.DataShareFilter</filter-class>
     <init-param>
       <param-name>Cosign.ConfigurationFile</param-name>
-      <param-value>/home/datashar/dspace/config/cosign/cosign.xml</param-value>
+      <param-value>${dspace.dir}/config/cosign/cosign.xml</param-value>
     </init-param>
     <init-param>
       <param-name>Auth.JAASConfigurationFile</param-name>
-      <param-value>/home/datashar/.jaas.conf</param-value>
+      <param-value>${dspace.dir}/config/.jaas.conf</param-value>
     </init-param>
   </filter>
   <filter-mapping>
@@ -309,5 +309,10 @@
         <extension>grm</extension>
         <mime-type>text/plain</mime-type>
     </mime-mapping>
+
+    <!-- session timeout - 1 day -->
+    <session-config>
+        <session-timeout>1440</session-timeout>
+    </session-config>
 
 </web-app>
