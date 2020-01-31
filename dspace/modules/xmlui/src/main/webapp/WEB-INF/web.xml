@@ -62,7 +62,7 @@
     </init-param>
     <init-param>
       <param-name>Auth.JAASConfigurationFile</param-name>
-      <param-value>${dspace.dir}/config/.jaas.conf</param-value>
+      <param-value>${dspace.dir}/config/jaas.conf</param-value>
     </init-param>
   </filter>
   <filter-mapping>
