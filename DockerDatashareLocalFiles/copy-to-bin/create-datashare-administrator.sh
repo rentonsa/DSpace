@@ -10,11 +10,11 @@ echo "UUN: "
 read uun
 
 # call DSpace create admin script
-/dspace/bin/bin/dsrun org.dspace.administer.CreateAdministrator -e $email -f $first -l $last -c en -p password
+./dspace create-administrator -e $email -f $first -l $last -c en -p password
 
 if [ $? = 0 ] ; then
     # now do DataShare specific stuff
-    /dspace/bin/bin/dsrun uk.ac.edina.datashare.administer.CreateAdministrator -u $uun -e $email
+    ./dspace dsrun uk.ac.edina.datashare.administer.CreateAdministrator -u $uun -e $email
 
     if [ $? != 0 ] ; then
         echo "Problem creating admin account."

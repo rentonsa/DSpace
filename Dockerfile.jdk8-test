@@ -99,8 +99,6 @@ COPY DockerDatashareLocalFiles/copy-to-webapps/swordv2/web.xml /app/dspace/webap
 
 # Add Datashare spring
 
-
-
 # DATASHARE - END
 
 
