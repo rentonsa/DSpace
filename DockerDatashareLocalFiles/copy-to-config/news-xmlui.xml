@@ -21,7 +21,7 @@
         Deposit Your Data
       </head>
       <div id="upload-data">
-        <figure source="/themes/Mirage2/images/deposit.png" target="/handle/123456789/3/submit">
+        <figure source="./themes/Mirage2/images/deposit.png" target="/handle/123456789/3/submit">
         Deposit Your Data
         </figure>
       </div>
