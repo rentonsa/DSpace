@@ -30,3 +30,14 @@ CREATE INDEX dataset_file_name_index ON dataset USING btree (file_name);
 
 ALTER TABLE dataset ADD CONSTRAINT dataset_item_id_fkey FOREIGN KEY (item_id) REFERENCES item(uuid) ON DELETE CASCADE;
 
+
+CREATE TABLE batch_import (
+	id integer NOT NULL,
+	eperson_id uuid NOT NULL,
+	map_file text NOT NULL,
+	uuid UUID DEFAULT gen_random_uuid() UNIQUE,
+	CONSTRAINT batch_import_pkey PRIMARY KEY (uuid)
+);
+
+ALTER TABLE batch_import ADD CONSTRAINT batch_import_eperson_id_fkey FOREIGN KEY (eperson_id) REFERENCES eperson(uuid);
+

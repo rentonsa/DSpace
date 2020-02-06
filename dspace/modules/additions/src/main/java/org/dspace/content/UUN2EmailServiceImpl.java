@@ -67,6 +67,7 @@ public class UUN2EmailServiceImpl  extends DSpaceObjectServiceImpl<UUN2Email> im
 
 	@Override
 	public void insertUUNEntry(Context context, String uun, String email) throws SQLException, AuthorizeException {
+		log.info("Called insertUUNEntry with uun : " + uun + ", email: " + email);
 		createUUN2Email(context, uun, email);
 	}
 
@@ -95,23 +96,25 @@ public class UUN2EmailServiceImpl  extends DSpaceObjectServiceImpl<UUN2Email> im
 	}
 
 	protected  UUN2Email createUUN2Email(Context context, String uun, String email) throws SQLException, AuthorizeException {
-		UUN2Email UUN2EmailObj = new UUN2Email();
+		UUN2Email uun2EmailObj = new UUN2Email();
+		uun2EmailObj.setUUN(uun);
+		uun2EmailObj.setEmail(email);
 		
-		UUN2Email UUN2Email = uun2EmailDAO.create(context, UUN2EmailObj);
-        
+		log.info("Creating uun2Email for db storage.");
+		UUN2Email uun2Email = uun2EmailDAO.create(context, uun2EmailObj);
 
         // Call update to give the item a last modified date. OK this isn't
         // amazingly efficient but creates don't happen that often.
         context.turnOffAuthorisationSystem();
-        update(context, UUN2Email);
+        update(context, uun2Email);
         context.restoreAuthSystemState();
 
-        context.addEvent(new Event(Event.CREATE, Constants.UUN_2_EMAIL, UUN2Email.getID(),
-                null, getIdentifiers(context, UUN2Email)));
+        context.addEvent(new Event(Event.CREATE, Constants.UUN_2_EMAIL, uun2Email.getID(),
+                null, getIdentifiers(context, uun2Email)));
 
-        log.info(LogManager.getHeader(context, "create_UUN2Email", "UUN2Email id= " + UUN2Email.getID()));
+        log.info(LogManager.getHeader(context, "create_UUN2Email", "UUN2Email id= " + uun2Email.getID()));
 
-        return UUN2Email;
+        return uun2Email;
 		
 	}
 
