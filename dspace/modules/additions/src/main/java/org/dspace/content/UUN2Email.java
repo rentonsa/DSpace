@@ -14,7 +14,8 @@ import org.dspace.core.Constants;
 @Table(name = "uun2email")
 public class UUN2Email extends DSpaceObject {
 	
-	@Column(name= "uun")
+
+	@Column(name= "uun", unique = true)
     private String uUN;
 	
 	@Column(name= "email")

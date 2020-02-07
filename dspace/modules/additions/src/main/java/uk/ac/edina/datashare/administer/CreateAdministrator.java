@@ -7,7 +7,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.PosixParser;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.factory.DatashareContentServiceFactory;
-import org.dspace.content.service.DatasetService;
+import org.dspace.content.service.UUN2EmailService;
 import org.dspace.core.Context;
 
 /**
@@ -37,7 +37,7 @@ public class CreateAdministrator {
 			if (line.hasOption('u') && line.hasOption('e')) {
 				// got values - update database with UUN/email values
 				Context context = new Context();
-				DatasetService datasetService = DatashareContentServiceFactory.getInstance().getDatasetService();
+				UUN2EmailService datasetService = DatashareContentServiceFactory.getInstance().getUUN2EmailService();
 				datasetService.insertUUNEntry(context, line.getOptionValue('u'), line.getOptionValue('e'));
 
 				context.complete();
