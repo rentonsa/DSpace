@@ -25,10 +25,8 @@ COPY dspace/src/main/docker/local.cfg /app/local.cfg
 
 # DATASHARE - START
 
-# Add missing jars
-RUN mvn install:install-file -Dfile=MissingDspaceJars/jcosign-3.0.1.jar -DgroupId=org.edu.umich -DartifactId=jcosign -Dversion=3.0.1 -Dpackaging=jar && \
-mvn install:install-file -Dfile=MissingDspaceJars/atmire-statistics-exporter-api-1.0.0.jar -DgroupId=com.atmire -DartifactId=atmire-statistics-exporter-api -Dversion=1.0.0 -Dpackaging=jar && \
-mvn install:install-file -Dfile=MissingDspaceJars/sword2-client-0.9.2.jar -DgroupId=org.swordapp -DartifactId=sword2-client -Dversion=0.9.2 -Dpackaging=jar
+# Add missing jars folder
+COPY MissingDspaceJars /app/
 
 # Add Datashare to config folder: COPY DockerDatashareLocalFiles/copy-to-config/ /app/dspace/config/
 COPY DockerDatashareLocalFiles/copy-to-config/cosign/ /app/dspace/config/
