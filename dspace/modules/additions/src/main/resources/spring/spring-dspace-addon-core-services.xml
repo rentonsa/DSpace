@@ -25,7 +25,7 @@
     <bean id="datasetService" class="org.dspace.content.DatasetServiceImpl" depends-on="datasetDAO"/>
     <bean id="swordKeyService" class="org.dspace.content.SwordKeyServiceImpl" depends-on="swordKeyDAO"/>
     <bean id="uUN2EmailService" class="org.dspace.content.UUN2EmailServiceImpl" depends-on="uUN2EmailDAO"/>
-
+    <bean id="datashareAccountService" class="org.dspace.eperson.DatashareAccountServiceImpl" depends-on="accountService,registrationDataService"/>
     <!--  Don't think it is used
     <bean id="shareGeoHandleService" class="org.dspace.handle.ShareGeoHandleServiceImpl" depends-on="shareGeoHandleDAO"/>
     -->

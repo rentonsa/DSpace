@@ -2,20 +2,33 @@ package org.dspace.eperson;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Locale;
 
 import javax.mail.MessagingException;
 
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
+import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
+import org.dspace.core.Email;
+import org.dspace.core.I18nUtil;
+import org.dspace.eperson.service.AccountService;
+import org.dspace.eperson.service.DatashareAccountService;
+import org.dspace.eperson.service.RegistrationDataService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
-public class DatashareAccountServiceImpl extends AccountServiceImpl {
+public class DatashareAccountServiceImpl implements DatashareAccountService {
 
 	/** log4j log */
-	private static Logger log = Logger.getLogger(DatashareAccountServiceImpl.class);
+	public static Logger log = Logger.getLogger(DatashareAccountServiceImpl.class);
  
-	/* DATASHARE code start */
+	@Autowired(required = true)
+	private AccountService accountService;
+	
+	@Autowired(required = true)
+	private RegistrationDataService registrationDataService;
+	
 	/**
 	 * 
 	 * @param context DSpace context
@@ -26,6 +39,7 @@ public class DatashareAccountServiceImpl extends AccountServiceImpl {
 	 * @throws MessagingException
 	 * @throws AuthorizeException
 	 */
+	@Override
 	public void sendInfo(Context context, String email, String uun)
 			throws SQLException, IOException, MessagingException, AuthorizeException {
 
@@ -64,10 +78,93 @@ public class DatashareAccountServiceImpl extends AccountServiceImpl {
 	 * @return The registration data
 	 * @throws SQLException 
 	 */
+	@Override
 	public RegistrationData getRegistrationData(Context context, String token) throws SQLException {
 		return registrationDataService.findByToken(context, token);
 	}
-	/* DATASHARE code end */
+
+
+	@Override
+	public Logger getLogger() {
+		return log;
+		
+	}
+
+
+	@Override
+	public void sendRegistrationInfo(Context context, String email)
+			throws SQLException, IOException, MessagingException, AuthorizeException {
+		accountService.sendRegistrationInfo(context, email);
+	}
+
+
+	@Override
+	public void sendForgotPasswordInfo(Context context, String email)
+			throws SQLException, IOException, MessagingException, AuthorizeException {
+		accountService.sendForgotPasswordInfo(context, email);
+	}
+
+
+	@Override
+	public EPerson getEPerson(Context context, String token) throws SQLException, AuthorizeException {
+		return accountService.getEPerson(context, token);
+	}
+
+
+	@Override
+	public String getEmail(Context context, String token) throws SQLException {
+		return accountService.getEmail(context, token);
+	}
+
+
+	@Override
+	public void deleteToken(Context context, String token) throws SQLException {
+		accountService.deleteToken(context, token);
+	}
+	
+	/**
+     * Send a DSpace message to the given email address.
+     *
+     * If isRegister is <code>true</code>, this is registration email;
+     * otherwise, it is a forgot-password email.
+     *
+     * @param email
+     *            The email address to mail to
+     * @param isRegister
+     *            If true, this is registration email; otherwise it is
+     *            forgot-password email.
+     * @param rd
+     *            The RDBMS row representing the registration data.
+     * @exception MessagingException
+     *                If an error occurs while sending email
+     * @exception IOException
+     *                If an error occurs while reading the email template.
+     */
+    protected void sendEmail(Context context, String email, boolean isRegister, RegistrationData rd)
+            throws MessagingException, IOException, SQLException
+    {
+        String base = ConfigurationManager.getProperty("dspace.url");
+
+        //  Note change from "key=" to "token="
+        String specialLink = new StringBuffer().append(base).append(
+                base.endsWith("/") ? "" : "/").append(
+                isRegister ? "register" : "forgot").append("?")
+                .append("token=").append(rd.getToken())
+                .toString();
+        Locale locale = context.getCurrentLocale();
+        Email bean = Email.getEmail(I18nUtil.getEmailFilename(locale, isRegister ? "register"
+                : "change_password"));
+        bean.addRecipient(email);
+        bean.addArgument(specialLink);
+        bean.send();
+
+        // Breadcrumbs
+        if (log.isInfoEnabled())
+        {
+            log.info("Sent " + (isRegister ? "registration" : "account")
+                    + " information to " + email);
+        }
+    }
 
 
 }

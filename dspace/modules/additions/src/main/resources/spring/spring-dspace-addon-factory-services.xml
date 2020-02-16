@@ -23,5 +23,8 @@
     <!-- ******************** -->
     <bean id="datashareContentServiceFactory" class="org.dspace.content.factory.DatashareContentServiceFactoryImpl" 
            depends-on="dSpaceServicesFactory,batchImportService,datasetService,swordKeyService,uUN2EmailService"/>
+    <bean id="datashareEPersonServiceFactory" class="org.dspace.eperson.factory.DatashareEPersonServiceFactoryImpl"
+           depends-on="dSpaceServicesFactory,datashareAccountService"/>
+    
 
 </beans>

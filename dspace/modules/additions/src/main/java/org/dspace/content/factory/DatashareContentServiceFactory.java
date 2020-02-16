@@ -36,13 +36,11 @@ import org.dspace.services.factory.DSpaceServicesFactory;
 import org.dspace.workflow.factory.WorkflowServiceFactory;
 
 /**
- * Abstract factory to get services for the content package, use ContentServiceFactory.getInstance() to retrieve an implementation
+ * Abstract factory to get services for the content package, use DatashareContentServiceFactory.getInstance() to retrieve an implementation
  *
- * @author kevinvandevelde at atmire.com
  */
 public abstract class DatashareContentServiceFactory {
 
-    // Datashare - start
     public abstract BatchImportService getBatchImportService();
     
     public abstract DatasetService getDatasetService();
@@ -50,7 +48,6 @@ public abstract class DatashareContentServiceFactory {
     public abstract SwordKeyService getSwordKeyService();
     
     public abstract UUN2EmailService getUUN2EmailService();
-    // Datashare -end
 
     public static DatashareContentServiceFactory getInstance(){
         return DSpaceServicesFactory.getInstance().getServiceManager().getServiceByName("datashareContentServiceFactory", DatashareContentServiceFactory.class);
