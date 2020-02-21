@@ -392,7 +392,7 @@ public class ItemDataset  {
 				throw new RuntimeException(ex);
 			} catch (IOException ex) {
 				final String msg = "Problem with " + tmpZip + ": " + ex.getMessage();
-				System.err.println(msg);
+				LOG.info(msg);
 				LOG.error(msg);
 				throw new RuntimeException(msg);
 			}
@@ -407,20 +407,20 @@ public class ItemDataset  {
 		public void run() {
 			boolean cont = true;
 			int sleep = 5000;
-			System.out.println("Checking dataset " + item.getHandle() + " ...");
+			LOG.info("Checking dataset " + item.getHandle() + " ...");
 			while (cont) {
 				if (exists()) {
-					System.out.println("dataset exists");
+					LOG.info("dataset exists");
 					cont = false;
 				} else if (!itemIsAvailable(context, item)) {
-					System.out.println("dataset creation not allowed");
+					LOG.info("dataset creation not allowed");
 					cont = false;
 				} else {
 					try {
 						Thread.sleep(sleep);
-						System.out.println("size: " + getTmpSize());
+						LOG.info("size: " + getTmpSize());
 					} catch (InterruptedException ex) {
-						System.err.println(ex);
+						LOG.info(ex);
 					}
 				}
 			}
@@ -448,30 +448,30 @@ public class ItemDataset  {
 				if (item.isArchived()) {
 					String handle = item.getHandle();
 					if (handle == null) {
-						System.err.println("*** Item with id " + item.getID() + " has no handle");
+						LOG.info("*** Item with id " + item.getID() + " has no handle");
 						continue;
 					}
 					itemHandles.add(item.getHandle());
 					ItemDataset ds = new ItemDataset(context, item);
 					if (ds.exists()) {
 						if (DSpaceUtils.showTombstone(context, item)) {
-							System.out.println("Delete tombstoned dataset: " + item.getHandle());
+							LOG.info("Delete tombstoned dataset: " + item.getHandle());
 							ds.delete();
 						} else {
-							System.out.println("Dataset already exists " + item.getHandle());
+							LOG.info("Dataset already exists " + item.getHandle());
 						}
 					} else {
 						if (ds.itemIsAvailable(context, item)) {
-							System.out.println("Create dataset for " + ds.getFullPath() + " for " + item.getHandle()
+							LOG.info("Create dataset for " + ds.getFullPath() + " for " + item.getHandle()
 									+ ", id: " + item.getID());
 							Thread th = ds.createDataset();
 							try {
 								th.join();
 							} catch (InterruptedException ex) {
-								System.out.println(ex);
+								LOG.info(ex);
 							}
 						} else {
-							System.out.println("Item is currently unavailable: " + item.getHandle());
+							LOG.info("Item is currently unavailable: " + item.getHandle());
 						}
 					}
 				}
@@ -489,14 +489,14 @@ public class ItemDataset  {
 				} else if (!zip.getName().equals("README.txt")) {
 					ItemDataset ds = new ItemDataset(context, zip);
 					if (!itemHandles.contains(ds.getHandle())) {
-						System.err.println("*** dataset " + zip + " exists with no item. Delete it.");
+						LOG.info("*** dataset " + zip + " exists with no item. Delete it.");
 						ds.delete();
 					}
 				}
 			}
 
 		} catch (SQLException ex) {
-			System.out.println(ex);
+			LOG.info(ex);
 		} finally {
 			try {
 				context.complete();
@@ -504,7 +504,7 @@ public class ItemDataset  {
 			}
 		}
 
-		System.out.println("exit");
+		LOG.info("exit");
 	}
 
 }

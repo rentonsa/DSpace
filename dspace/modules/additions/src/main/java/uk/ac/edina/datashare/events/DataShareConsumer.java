@@ -77,7 +77,7 @@ public class DataShareConsumer implements Consumer {
 				break;
 			}
 			default: {
-				LOG.info("Unkown event type: " + this.event.getType());
+				LOG.info("Unknown event type: " + this.event.getType());
 			}
 			}
 			this.event = null;

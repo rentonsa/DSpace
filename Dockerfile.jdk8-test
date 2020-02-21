@@ -29,6 +29,7 @@ COPY dspace/src/main/docker/local.cfg /app/local.cfg
 COPY MissingDspaceJars /app/
 
 # Add Datashare to config folder: COPY DockerDatashareLocalFiles/copy-to-config/ /app/dspace/config/
+COPY DockerDatashareLocalFiles/copy-to-config/dspace.cfg /app/dspace/config/
 COPY DockerDatashareLocalFiles/copy-to-config/cosign/ /app/dspace/config/
 COPY DockerDatashareLocalFiles/copy-to-config/news-xmlui.xml /app/dspace/config/
 COPY DockerDatashareLocalFiles/copy-to-config/default.license /app/dspace/config/
@@ -144,3 +145,8 @@ COPY dspace/src/main/docker/test/rest_web.xml $DSPACE_INSTALL/webapps/rest/WEB-I
 
 RUN sed -i -e "s|\${dspace.dir}|$DSPACE_INSTALL|" $DSPACE_INSTALL/webapps/solr/WEB-INF/web.xml && \
     sed -i -e "s|\${dspace.dir}|$DSPACE_INSTALL|" $DSPACE_INSTALL/webapps/rest/WEB-INF/web.xml
+
+# DATASHARE - start
+RUN mkdir -p $DSPACE_INSTALL/datashare/datasets
+# DATASHARE - end
+
