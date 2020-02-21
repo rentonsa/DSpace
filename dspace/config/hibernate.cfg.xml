@@ -26,8 +26,11 @@
         <property name="javax.persistence.sharedCache.mode">ENABLE_SELECTIVE</property>
         <!-- Set in config/spring/api/core-hibernate.xml -->
         <!--<property name="net.sf.ehcache.configurationResourceName">file:${dspace.dir}/config/hibernate-ehcache-config.xml</property>-->
-
-
+        
+        <!-- DATASHARE start -->
+        <property name="hibernate.enable_lazy_load_no_trans">true</property>
+        <!-- DATASHARE end -->
+        
         <!-- Entities to be loaded by hibernate -->
         <mapping class="org.dspace.app.util.WebApp"/>
 
