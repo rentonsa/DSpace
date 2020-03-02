@@ -39,10 +39,10 @@ import org.dspace.content.service.BitstreamService;
 import org.dspace.content.service.BundleService;
 import org.dspace.content.service.CommunityService;
 import org.dspace.content.service.WorkspaceItemService;
-import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.core.LogManager;
+import org.dspace.services.factory.DSpaceServicesFactory;
 import org.dspace.workflow.WorkflowException;
 import org.dspace.workflow.factory.WorkflowServiceFactory;
 import org.jdom.Element;
@@ -1084,18 +1084,18 @@ public abstract class AbstractMETSIngester extends AbstractPackageIngester {
 
 	// whether or not to save manifest as a bitstream in METADATA bundle.
 	protected boolean preserveManifest() {
-		return ConfigurationManager.getBooleanProperty("mets." + getConfigurationName() + ".ingest.preserveManifest",
+		return DSpaceServicesFactory.getInstance().getConfigurationService().getBooleanProperty("mets." + getConfigurationName() + ".ingest.preserveManifest",
 				false);
 	}
 
 	// return short name of manifest bitstream format
 	protected String getManifestBitstreamFormat() {
-		return ConfigurationManager.getProperty("mets." + getConfigurationName() + ".ingest.manifestBitstreamFormat");
+		return DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("mets." + getConfigurationName() + ".ingest.manifestBitstreamFormat");
 	}
 
 	// whether or not to use Collection Templates when creating a new item
 	protected boolean useCollectionTemplate() {
-		return ConfigurationManager
+		return DSpaceServicesFactory.getInstance().getConfigurationService()
 				.getBooleanProperty("mets." + getConfigurationName() + ".ingest.useCollectionTemplate", false);
 	}
 

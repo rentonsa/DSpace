@@ -3,7 +3,7 @@ package uk.ac.edina.datashare.utils;
 import java.io.File;
 
 import org.dspace.content.MetadataSchema;
-import org.dspace.core.ConfigurationManager;
+import org.dspace.services.factory.DSpaceServicesFactory;
 
 /**
  * DataShare constants.
@@ -56,13 +56,13 @@ public interface Consts {
 	public static final String CREATIVE_COMMONS_BY_RIGHTS_STATEMENT = "Creative Commons Attribution 4.0 International Public License";
 	public static final String CREATIVE_COMMONS_BY_RIGHTS_URI = "https://creativecommons.org/licenses/by/4.0/";
 	/** Full path and name of Creative Commons By license file. */
-	public static final String CREATIVE_COMMONS_BY_LICENCE = ConfigurationManager.getProperty("dspace.dir")
+	public static final String CREATIVE_COMMONS_BY_LICENCE = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("dspace.dir")
 			+ File.separator + "config" + File.separator + "cc-by.license";
 	/** Full path and name of ODC Attribution license file. */
-	public static final String ODC_ATTRIBUTION_LICENCE = ConfigurationManager.getProperty("dspace.dir") + File.separator
+	public static final String ODC_ATTRIBUTION_LICENCE = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("dspace.dir") + File.separator
 			+ "config" + File.separator + "odc-attribution.license";
 	/** Full path and name of Open Data license file. */
-	public static final String OPEN_DATA_LICENCE = ConfigurationManager.getProperty("dspace.dir") + File.separator
+	public static final String OPEN_DATA_LICENCE = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("dspace.dir") + File.separator
 			+ "config" + File.separator + "open-data.license";
 
 	/** User license control name */

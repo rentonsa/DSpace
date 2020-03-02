@@ -1,6 +1,5 @@
 package uk.ac.edina.datashare.eperson;
 
-import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.core.Email;
@@ -10,6 +9,7 @@ import org.dspace.eperson.EPersonConsumer;
 import org.dspace.eperson.factory.EPersonServiceFactory;
 import org.dspace.eperson.service.EPersonService;
 import org.dspace.event.Event;
+import org.dspace.services.factory.DSpaceServicesFactory;
 
 /**
  * Capture EPerson events to send an email to the user when an account is
@@ -30,7 +30,7 @@ public class UserEventHandler extends EPersonConsumer {
 
 			adminEmail.addRecipient(eperson.getEmail());
 			adminEmail.addArgument(eperson.getFirstName());
-			adminEmail.setReplyTo(ConfigurationManager.getProperty("mail.admin"));
+			adminEmail.setReplyTo(DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("mail.admin"));
 
 			adminEmail.send();
 		}

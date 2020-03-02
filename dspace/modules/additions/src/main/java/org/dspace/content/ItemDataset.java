@@ -26,11 +26,11 @@ import org.dspace.content.factory.DatashareContentServiceFactory;
 import org.dspace.content.service.BitstreamService;
 import org.dspace.content.service.DatasetService;
 import org.dspace.content.service.ItemService;
-import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.servicemanager.DSpaceKernelImpl;
 import org.dspace.servicemanager.DSpaceKernelInit;
+import org.dspace.services.factory.DSpaceServicesFactory;
 
 import uk.ac.edina.datashare.utils.DSpaceUtils;
 
@@ -112,7 +112,7 @@ public class ItemDataset  {
 	 * Initialise dataset.
 	 */
 	private void init() {
-		dir = org.dspace.core.ConfigurationManager.getProperty(DIR_PROP);
+		dir = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty(DIR_PROP);
 		if (dir == null) {
 			throw new RuntimeException(DIR_PROP + " needs to be defined");
 		}
@@ -237,7 +237,7 @@ public class ItemDataset  {
 	public URL getURL() {
 		URL url;
 		try {
-			String bUrl[] = ConfigurationManager.getProperty("dspace.baseUrl").split("://");
+			String bUrl[] = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("dspace.baseUrl").split("://");
 			String protocol = bUrl[0];
 			String host = bUrl[1];
 			String fPath = "/download/" + getFileName();
@@ -435,7 +435,7 @@ public class ItemDataset  {
 		try {
 			DSpaceKernelImpl kernelImpl = DSpaceKernelInit.getKernel(null);
 			if (!kernelImpl.isRunning()) {
-				kernelImpl.start(ConfigurationManager.getProperty("dspace.dir"));
+				kernelImpl.start(DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("dspace.dir"));
 			}
 			context = new Context();
 			ItemService itemService = ContentServiceFactory.getInstance().getItemService();

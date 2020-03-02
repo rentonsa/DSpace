@@ -12,11 +12,11 @@ import org.dspace.content.Item;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.BitstreamService;
 import org.dspace.content.service.ItemService;
-import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
 import org.dspace.curate.AbstractCurationTask;
 import org.dspace.curate.Curator;
 import org.dspace.curate.Distributive;
+import org.dspace.services.factory.DSpaceServicesFactory;
 
 /**
  * A curation job to check if an item's bitstreams are too large to be emailed
@@ -51,7 +51,7 @@ public class EmailableBitstreamsChecker extends AbstractCurationTask {
 	@Override
 	public void init(Curator curator, String taskId) throws IOException {
 		super.init(curator, taskId);
-		maxAllowedBitstreamsSizeInBytes = ConfigurationManager.getLongProperty(EMAILABLE_BITSTREAMS_MAX_SIZE_IN_MB_KEY,
+		maxAllowedBitstreamsSizeInBytes = DSpaceServicesFactory.getInstance().getConfigurationService().getLongProperty(EMAILABLE_BITSTREAMS_MAX_SIZE_IN_MB_KEY,
 				DEFAULT_EMAILABLE_BITSTREAMS_MAX_SIZE_IN_MB) * ONE_MEGABYTE_SIZE_IN_BYTES;
 	}
 

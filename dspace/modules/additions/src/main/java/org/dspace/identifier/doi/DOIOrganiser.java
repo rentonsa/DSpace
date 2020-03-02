@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.ItemService;
-import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.core.Email;
@@ -42,6 +41,7 @@ import org.dspace.identifier.DOIIdentifierProvider;
 import org.dspace.identifier.IdentifierException;
 import org.dspace.identifier.factory.IdentifierServiceFactory;
 import org.dspace.identifier.service.DOIService;
+import org.dspace.services.factory.DSpaceServicesFactory;
 import org.dspace.utils.DSpace;
 
 /**
@@ -638,7 +638,7 @@ public class DOIOrganiser {
 	}
 
 	private void sendAlertMail(String action, DSpaceObject dso, String doi, String reason) throws IOException {
-		String recipient = ConfigurationManager.getProperty("alert.recipient");
+		String recipient = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("alert.recipient");
 
 		try {
 			if (recipient != null) {

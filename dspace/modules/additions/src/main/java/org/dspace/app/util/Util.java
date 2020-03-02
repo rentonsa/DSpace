@@ -33,10 +33,11 @@ import org.dspace.content.Item;
 import org.dspace.content.MetadataValue;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.ItemService;
-import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.core.I18nUtil;
+import org.dspace.services.ConfigurationService;
+import org.dspace.services.factory.DSpaceServicesFactory;
 
 import uk.ac.edina.datashare.utils.DSpaceUtils;
 //DATASHARE end
@@ -578,8 +579,9 @@ public class Util {
     {
         boolean hasEmbargo = true;
         ItemService itemService = ContentServiceFactory.getInstance().getItemService();
+        ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
         
-        List<MetadataValue> embargoList = itemService.getMetadataByMetadataString(item, ConfigurationManager.getProperty("embargo.field.lift"));
+        List<MetadataValue> embargoList = itemService.getMetadataByMetadataString(item, configurationService.getProperty("embargo.field.lift"));
         if(embargoList == null || embargoList.size() == 0){
             hasEmbargo = false;
         }
@@ -652,7 +654,8 @@ public class Util {
         }
         
         long limit = 2147483647;
-        String limitStr = ConfigurationManager.getProperty("dspace.downloadall.limit");
+        ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
+        String limitStr = configurationService.getProperty("dspace.downloadall.limit");
         if(limitStr != null){
             limit = Long.parseLong(limitStr);
         }
@@ -692,7 +695,8 @@ public class Util {
     public static String getIPAddress(HttpServletRequest request){
         // Set the session ID and IP address
         String ip = request.getRemoteAddr();
-        if(ConfigurationManager.getBooleanProperty("useProxies", false)){
+        ConfigurationService configurationService =  DSpaceServicesFactory.getInstance().getConfigurationService();
+        if(configurationService.getBooleanProperty("useProxies", false)){
             if(request.getHeader("X-Forwarded-For") != null){
                 ip = getXForwardedFor("X-Forwarded-For", request, ip);
             }

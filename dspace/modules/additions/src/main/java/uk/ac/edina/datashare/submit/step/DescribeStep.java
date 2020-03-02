@@ -26,8 +26,8 @@ import org.dspace.content.Item;
 import org.dspace.content.MetadataValue;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.ItemService;
-import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
+import org.dspace.services.factory.DSpaceServicesFactory;
 
 import uk.ac.edina.datashare.utils.Consts;
 import uk.ac.edina.datashare.utils.DSpaceUtils;
@@ -179,7 +179,7 @@ public class DescribeStep extends org.dspace.submit.step.DescribeStep {
 	private int processEmbargo(HttpServletRequest request, Item item, int currentStatus) {
 		int status = currentStatus;
 
-		String terms[] = ConfigurationManager.getProperty("embargo.field.terms").split("\\.");
+		String terms[] = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("embargo.field.terms").split("\\.");
 		 List<MetadataValue> dcValues = itemService.getMetadata(item, terms[0], terms[1], terms[2], Item.ANY);
 
 		if (dcValues.size() > 0) {

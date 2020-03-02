@@ -28,7 +28,6 @@ import org.dspace.content.MetadataValue;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.BitstreamService;
 import org.dspace.content.service.CollectionService;
-import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
 import org.dspace.core.LogManager;
 import org.dspace.eperson.EPerson;
@@ -38,6 +37,8 @@ import org.dspace.eperson.service.EPersonService;
 import org.dspace.eperson.service.GroupService;
 import org.dspace.license.factory.LicenseServiceFactory;
 import org.dspace.license.service.CreativeCommonsService;
+import org.dspace.services.ConfigurationService;
+import org.dspace.services.factory.DSpaceServicesFactory;
 
 /**
  * Some DSpace utility methods.
@@ -385,7 +386,7 @@ public class DSpaceUtils {
 		// ensures they are password users
 		List<Group> specialGroups = new ArrayList<Group>(0);
 		try {
-			String groupName = ConfigurationManager.getProperty("authentication-password", "login.specialgroup");
+			String groupName = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("authentication-password", "login.specialgroup");
 			if ((groupName != null) && (!groupName.trim().equals(""))) {
 				GroupService groupService = EPersonServiceFactory.getInstance().getGroupService();
 				Group specialGroup = groupService.findByName(context, groupName);
@@ -459,14 +460,14 @@ public class DSpaceUtils {
 	 * @return True if is dspace running on a development environment.
 	 */
 	public static boolean isDev() {
-		return ConfigurationManager.getProperty("dspace.hostname").substring(0, 5).equals("dlib-");
+		return DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("dspace.hostname").substring(0, 5).equals("dlib-");
 	}
 
 	/**
 	 * @return True if is dspace running on a BETA environment.
 	 */
 	public static boolean isBeta() {
-		return ConfigurationManager.getProperty("dspace.hostname").substring(0, 5).equals("devel");
+		return DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("dspace.hostname").substring(0, 5).equals("devel");
 	}
 
 	/**

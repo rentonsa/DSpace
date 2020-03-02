@@ -8,13 +8,13 @@ import javax.mail.MessagingException;
 
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
-import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
 import org.dspace.core.Email;
 import org.dspace.core.I18nUtil;
 import org.dspace.eperson.service.AccountService;
 import org.dspace.eperson.service.DatashareAccountService;
 import org.dspace.eperson.service.RegistrationDataService;
+import org.dspace.services.factory.DSpaceServicesFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -143,7 +143,7 @@ public class DatashareAccountServiceImpl implements DatashareAccountService {
     protected void sendEmail(Context context, String email, boolean isRegister, RegistrationData rd)
             throws MessagingException, IOException, SQLException
     {
-        String base = ConfigurationManager.getProperty("dspace.url");
+        String base = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("dspace.url");
 
         //  Note change from "key=" to "token="
         String specialLink = new StringBuffer().append(base).append(

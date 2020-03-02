@@ -83,7 +83,6 @@ import org.dspace.content.service.MetadataSchemaService;
 import org.dspace.content.service.SwordKeyService;
 import org.dspace.content.service.UUN2EmailService;
 import org.dspace.content.service.WorkspaceItemService;
-import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.core.Email;
@@ -94,6 +93,7 @@ import org.dspace.eperson.Group;
 import org.dspace.eperson.service.EPersonService;
 import org.dspace.eperson.service.GroupService;
 import org.dspace.handle.service.HandleService;
+import org.dspace.services.factory.DSpaceServicesFactory;
 import org.dspace.utils.DSpace;
 import org.dspace.workflow.WorkflowItem;
 import org.dspace.workflow.WorkflowService;
@@ -182,7 +182,7 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
     // Datashare - end
 
 
-    protected final String tempWorkDir = ConfigurationManager.getProperty("org.dspace.app.batchitemimport.work.dir");
+    protected final String tempWorkDir = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("org.dspace.app.batchitemimport.work.dir");
 
     protected boolean isTest = false;
     protected boolean isResume = false;
@@ -252,7 +252,7 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
     	//Determine the folder where BTE will output the results
     	String outputFolder = null;
     	if (workingDir == null){ //This indicates a command line import, create a random path
-    		File importDir = new File(ConfigurationManager.getProperty("org.dspace.app.batchitemimport.work.dir"));
+    		File importDir = new File(DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("org.dspace.app.batchitemimport.work.dir"));
             if (!importDir.exists()){
             	boolean success = importDir.mkdir();
             	if (!success) {
@@ -466,7 +466,7 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
                         I18nUtil.getEmailFilename(c.getCurrentLocale(), "batch_ingest"));
                 mail.addArgument(items.toString());
                 EPerson user = c.getCurrentUser();
-                String url = ConfigurationManager.getProperty("dspace.url") +
+                String url = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("dspace.url") +
                         "/deposit-agree?batch=" + batchId;
                 mail.addArgument(url);
                 mail.addRecipient(user.getEmail());
@@ -1784,7 +1784,7 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
         File tempdir = new File(destinationDir);
         if (!tempdir.isDirectory())
         {
-            log.error("'" + ConfigurationManager.getProperty("org.dspace.app.itemexport.work.dir") +
+            log.error("'" + DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("org.dspace.app.itemexport.work.dir") +
                     "' as defined by the key 'org.dspace.app.itemexport.work.dir' in dspace.cfg " +
                     "is not a valid directory");
         }
@@ -1951,7 +1951,7 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
                         }
                     }
 
-					importDir = ConfigurationManager.getProperty("org.dspace.app.batchitemimport.work.dir") + File.separator + "batchuploads" + File.separator + context.getCurrentUser().getID() + File.separator + (isResume?theResumeDir:(new GregorianCalendar()).getTimeInMillis());
+					importDir = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("org.dspace.app.batchitemimport.work.dir") + File.separator + "batchuploads" + File.separator + context.getCurrentUser().getID() + File.separator + (isResume?theResumeDir:(new GregorianCalendar()).getTimeInMillis());
 					File importDirFile = new File(importDir);
 					if (!importDirFile.exists()){
 						boolean success = importDirFile.mkdirs();
@@ -2113,7 +2113,7 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
             Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "bte_batch_import_error"));
             email.addRecipient(eperson.getEmail());
             email.addArgument(error);
-            email.addArgument(ConfigurationManager.getProperty("dspace.url") + "/feedback");
+            email.addArgument(DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("dspace.url") + "/feedback");
 
             email.send();
         }
@@ -2158,7 +2158,7 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
     public String getImportUploadableDirectory(EPerson ePerson)
             throws Exception
     {
-        String uploadDir = ConfigurationManager.getProperty("org.dspace.app.batchitemimport.work.dir");
+        String uploadDir = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("org.dspace.app.batchitemimport.work.dir");
         if (uploadDir == null)
         {
             throw new Exception(
