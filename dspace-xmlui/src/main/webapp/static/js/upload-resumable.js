@@ -6,12 +6,28 @@
  * http://www.dspace.org/license/
  */
 
-(function($){
+(function(){
 	"use strict";
 
 	var href = window.location.href;
 	var params = href.split('/');
-	var url = '/handle/' + params[4] + '/' + params[5] + '/upload';
+	console.log("params: ", params);
+	var url = '';
+//	changed to enable use with docker 
+	var indexOfHandle = params.indexOf('handle');
+	console.log("indexOfHandle: ", indexOfHandle);
+
+	if(indexOfHandle > -1) {
+		// Fourth param (index 3) is the first after base url, e.g
+		// params = ["http:", "", "localhost:8080", "xmlui", "handle", 
+		// "123456789", "2", "submit", "3130662e386f771646220a7f37603f2d537e715d.continue"]
+		for (var i = 3; i <= indexOfHandle + 2; i++) {
+			url += '/' + params[i];
+			console.log("url: ", url);
+		}
+		url += '/upload';
+		console.log("url: ", url);
+	}
 
 //	get submission id
 	var sId = $('input[name="submit-id"]').val();
