@@ -514,4 +514,4 @@
 		// resumable not supported hide resumable form
 		$('#aspect_submission_StepTransformer_div_resumable-upload').hide();
 	}
-})(jQuery);
+})();
