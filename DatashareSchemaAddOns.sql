@@ -18,8 +18,8 @@ ALTER TABLE sword_keys ADD CONSTRAINT sword_keys_eperson_id_fkey FOREIGN KEY (ep
 
 
 CREATE TABLE dataset (
-	id integer  NOT NULL UNIQUE,
-	item_id uuid NOT NULL,
+	id integer NULL,
+	item_id uuid  NOT NULL UNIQUE,
 	file_name varchar(256) NULL,
 	checksum varchar(64) NULL,
 	checksum_algorithm varchar(32) NULL,
