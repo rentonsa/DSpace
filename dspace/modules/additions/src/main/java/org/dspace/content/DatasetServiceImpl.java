@@ -193,7 +193,7 @@ public class DatasetServiceImpl  extends DSpaceObjectServiceImpl<Dataset> implem
 	}
 	
 	protected Dataset findDatsetByItem(Context context, Item item) throws SQLException {
-		String jpqlQuery = "SELECT dset FROM Dataset dset where dset.item.uuid = " + item.getID();
+		String jpqlQuery = "SELECT dset FROM Dataset dset where dset.item.id = '" + item.getID() + "'";
 		Dataset dataset = datasetDAO.findUnique(context, jpqlQuery);
 		if (dataset == null)
 		{

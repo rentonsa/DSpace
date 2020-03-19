@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.dspace.authorize.AuthorizeException;
 // DATASHARE start
 import org.dspace.authorize.factory.AuthorizeServiceFactory;
 import org.dspace.authorize.service.AuthorizeService;
@@ -586,7 +587,7 @@ public class Util {
             hasEmbargo = false;
         }
         
-        log.debug(item.getID() + " hasEmbargo: " + hasEmbargo);
+        log.info(item.getID() + " hasEmbargo: " + hasEmbargo);
         
         return hasEmbargo;
     }
@@ -600,28 +601,37 @@ public class Util {
     public static boolean canReadAllBitstreams(Context context, Item item)
     {
         boolean canRead = true;
-        try
-        {
-        	ItemService itemService = ContentServiceFactory.getInstance().getItemService();
-            List<Bundle> bundles = itemService.getBundles(item, "ORIGINAL");
-            for(int i = 0; i < bundles.size() && canRead; i++)
-            {
-                List<Bitstream> files = bundles.get(i).getBitstreams();
-                for(int j = 0; j < files.size() && canRead; j++)
-                {
-                	AuthorizeService authorizeService = AuthorizeServiceFactory.getInstance().getAuthorizeService();
-                    //System.out.println(j);
-                    canRead = authorizeService.authorizeActionBoolean(
-                            context,
-                            files.get(j),
-                            Constants.READ);
-                }
-            }
-        }
-        catch(SQLException ex)
-        {
-            throw new RuntimeException(ex);
-        }
+        // FIX: not working as expected
+//        try
+//        {
+//        	ItemService itemService = ContentServiceFactory.getInstance().getItemService();
+//        	itemService.updateLastModified(context, item);
+//        	List<Bundle> bundles = itemService.getBundles(item, "ORIGINAL");
+//            
+//            for(int i = 0; i < bundles.size() && canRead; i++)
+//            {
+//                List<Bitstream> files = bundles.get(i).getBitstreams();
+//                for(int j = 0; j < files.size() && canRead; j++)
+//                {
+//                	AuthorizeService authorizeService = AuthorizeServiceFactory.getInstance().getAuthorizeService();
+//                    //System.out.println(j);
+//                    canRead = authorizeService.authorizeActionBoolean(
+//                            context,
+//                            files.get(j),
+//                            Constants.READ);
+//                    log.info(item.getID() + ": file index: " + j + ", canRead: " + canRead);
+//                }
+//            }
+//        }
+//        catch(SQLException ex)
+//        {
+//            throw new RuntimeException(ex);
+//        } catch (AuthorizeException e) {
+//			// TODO Auto-generated catch block
+//        	throw new RuntimeException(e);
+//		}
+        
+        log.info(item.getID() + " canReadAllBitstreams: " + canRead);
 
         return canRead;
     }

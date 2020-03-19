@@ -78,7 +78,7 @@
         <!--  DATASHARE - start -->
         <mapping class="org.dspace.content.BatchImport"/>
         <mapping class="org.dspace.content.Dataset"/>
-        <mapping class="org.dspace.content.ItemDataset"/>
+        <!--  <mapping class="org.dspace.content.ItemDataset"/> -->
         <mapping class="org.dspace.content.UUN2Email"/>
         <!-- DATASHARE - end -->
 

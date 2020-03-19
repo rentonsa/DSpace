@@ -19,6 +19,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.jena.atlas.logging.Log;
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.content.factory.ContentServiceFactory;
@@ -257,6 +258,9 @@ public class ItemDataset  {
 	}
 
 	private boolean itemIsAvailable(Context context, Item item) {
+		LOG.info("hasEmbargo: " + DSpaceUtils.hasEmbargo(context, item));
+		LOG.info("isWithdrawn: " + item.isWithdrawn());
+		LOG.info("showTombstone: " + DSpaceUtils.showTombstone(context, item));
 		return !DSpaceUtils.hasEmbargo(context, item) && !item.isWithdrawn()
 				&& !DSpaceUtils.showTombstone(context, item);
 	}
@@ -298,7 +302,7 @@ public class ItemDataset  {
 				ItemService itemService = ContentServiceFactory.getInstance().getItemService();
 				// get item using new context, otherwise potential
 				// for context out-with our control to be closed
-				item = itemService.find(context, item.getID());
+//				item = itemService.find(context, item.getID());
 
 				if (itemIsAvailable(context, item)) {
 					LOG.info("create zip for " + item.getHandle());
@@ -347,7 +351,7 @@ public class ItemDataset  {
 				zos.setLevel(0);
 
 				ItemService itemService = ContentServiceFactory.getInstance().getItemService();
-				List<Bundle> bundle = itemService.getBundles(item, ""); // TBD - fix String Name
+				List<Bundle> bundle = itemService.getBundles(item, "ORIGINAL");
 
 				// loop round bundles, there should be two - files and licences
 				for (int i = 0; i < bundle.size(); i++) {
@@ -434,19 +438,30 @@ public class ItemDataset  {
 		Context context = null;
 		try {
 			DSpaceKernelImpl kernelImpl = DSpaceKernelInit.getKernel(null);
+			LOG.info("*** kernelImpl: " + kernelImpl);
+			LOG.info("*** kernelImpl.isRunning(): " + kernelImpl.isRunning());
+			LOG.info("Dspace.dir: " + DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("dspace.dir"));
 			if (!kernelImpl.isRunning()) {
 				kernelImpl.start(DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("dspace.dir"));
 			}
+			LOG.info("*** Before context: ");
 			context = new Context();
+			LOG.info("*** context: " + context);
+			
 			ItemService itemService = ContentServiceFactory.getInstance().getItemService();
-
+			LOG.info("*** itemService: " + itemService);
+			
 			List<String> itemHandles = new ArrayList<String>(10000);
 			Iterator<Item> iter = itemService.findAll(context);
+			LOG.info("*** iter: " + iter);
 
 			while (iter.hasNext()) {
 				Item item = iter.next();
+				LOG.info("*** item: " + item);
 				if (item.isArchived()) {
 					String handle = item.getHandle();
+					LOG.info("*** handle: " + handle);
+					
 					if (handle == null) {
 						LOG.info("*** Item with id " + item.getID() + " has no handle");
 						continue;
@@ -478,7 +493,10 @@ public class ItemDataset  {
 			}
 
 			// now see if any datasets are orphaned, just in case
+			LOG.info("*** dir: " + dir);
 			File datasets[] = new File(dir).listFiles();
+			LOG.info("*** datasets: " + datasets);
+			
 			for (File zip : datasets) {
 				if (zip.getName().endsWith(TMP_FILE_NAME_EXT)) {
 					// if file is a temporary file delete it if more than one day old
@@ -497,10 +515,18 @@ public class ItemDataset  {
 
 		} catch (SQLException ex) {
 			LOG.info(ex);
+		} catch (Exception e) {
+			LOG.info(e);
+			throw e;
+			
 		} finally {
 			try {
 				context.complete();
 			} catch (SQLException ex) {
+			} catch (Exception e) {
+				LOG.info(e);
+				throw e;
+				
 			}
 		}
 

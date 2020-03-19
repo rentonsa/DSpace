@@ -37,7 +37,6 @@ import org.dspace.eperson.service.EPersonService;
 import org.dspace.eperson.service.GroupService;
 import org.dspace.license.factory.LicenseServiceFactory;
 import org.dspace.license.service.CreativeCommonsService;
-import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
 
 /**

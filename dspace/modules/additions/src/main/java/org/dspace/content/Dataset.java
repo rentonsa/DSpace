@@ -24,7 +24,7 @@ public class Dataset extends DSpaceObject implements DSpaceObjectLegacySupport {
     private Integer legacyId;
 	
     @OneToOne(optional = false)
-    @JoinColumn(name = "uuid")
+    @JoinColumn(name = "item_id")
     private Item item = null;
 	
     @Column(name= "file_name")
