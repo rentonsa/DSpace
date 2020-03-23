@@ -114,6 +114,7 @@ public class ItemDataset  {
 	 */
 	private void init() {
 		dir = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty(DIR_PROP);
+		LOG.info("init()- dir: " + dir);
 		if (dir == null) {
 			throw new RuntimeException(DIR_PROP + " needs to be defined");
 		}
@@ -121,6 +122,7 @@ public class ItemDataset  {
 		if (!new File(dir).exists()) {
 			throw new RuntimeException(dir + " doesn't exist");
 		}
+		
 	}
 
 	/**
@@ -175,6 +177,8 @@ public class ItemDataset  {
 	}
 
 	public boolean exists() {
+		LOG.info("getFullPath(): " + getFullPath());
+		
 		return new File(getFullPath()).exists();
 	}
 
@@ -351,7 +355,7 @@ public class ItemDataset  {
 				zos.setLevel(0);
 
 				ItemService itemService = ContentServiceFactory.getInstance().getItemService();
-				List<Bundle> bundle = itemService.getBundles(item, "ORIGINAL");
+				List<Bundle> bundle = itemService.getBundles(item, "");
 
 				// loop round bundles, there should be two - files and licences
 				for (int i = 0; i < bundle.size(); i++) {
@@ -363,9 +367,10 @@ public class ItemDataset  {
 						if (includeBitstream(context, bitstreams.get(j))) {
 							LOG.info("do " + bitstreams.get(j).getName());
 							ZipEntry entry = new ZipEntry(bitstreams.get(j).getName());
-
+							LOG.info("ZipEntry entry " + entry);
 							zos.putNextEntry(entry);
 							InputStream in = bitstreamService.retrieve(context, bitstreams.get(j));
+							LOG.info("InputStream in " + in);
 							int length = -1;
 							while ((length = in.read(BUFFER)) > -1) {
 								zos.write(BUFFER, 0, length);

@@ -294,9 +294,11 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
         }
         
         // DATASHARE - start
+        log.info("Util.allowDownloadAll(context, item): " + Util.allowDownloadAll(context, item));
         if(Util.allowDownloadAll(context, item))
         {
             ItemDataset ds = new ItemDataset(context, item);
+            log.info("ds.exists(): " + ds.exists());
             if(ds.exists()){
                 pageMeta.addMetadata("download_all_file").addContent(
                         ds.getURL().toString());
