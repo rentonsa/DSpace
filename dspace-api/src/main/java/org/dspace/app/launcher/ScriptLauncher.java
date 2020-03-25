@@ -44,6 +44,8 @@ public class ScriptLauncher
         try
         {
             kernelImpl = DSpaceKernelInit.getKernel(null);
+            System.out.println("kernelImpl: " + kernelImpl);
+            System.out.println("kernelImpl.isRunning(): " + kernelImpl.isRunning());
             if (!kernelImpl.isRunning())
             {
                 kernelImpl.start();
@@ -64,7 +66,7 @@ public class ScriptLauncher
             e.printStackTrace();
             throw new IllegalStateException(message, e);
         }
-
+        System.out.println("AfterkernelImpl.start():  kernelImpl.isRunning(): " + kernelImpl.isRunning());
         // Load up the ScriptLauncher's configuration
         Document commandConfigs = getConfig();
 
@@ -117,9 +119,10 @@ public class ScriptLauncher
             display(commandConfigs);
             return 1;
         }
-
+        
         // Run each step
         List<Element> steps = command.getChildren("step");
+        System.out.println("steps = command.getChildren(\"step\"): " +  steps);
         for (Element step : steps)
         {
             // Instantiate the class
@@ -139,6 +142,7 @@ public class ScriptLauncher
             else {
                 className = step.getChild("class").getValue();
             }
+            System.out.println("className: " +  className);
             try
             {
                 target = Class.forName(className,
@@ -150,7 +154,7 @@ public class ScriptLauncher
                 System.err.println("Error in launcher.xml: Invalid class name: " + className);
                 return 1;
             }
-
+            System.out.println("target: " +  target);
             // Strip the leading argument from the args, and add the arguments
             // Set <passargs>false</passargs> if the arguments should not be passed on
             String[] useargs = args.clone();
@@ -181,7 +185,10 @@ public class ScriptLauncher
                 }
                 useargs = argsnew;
             }
-
+            System.out.println("useargs: " +  useargs);
+            if(useargs != null) {
+            	System.out.println("useargs.length: " +  useargs.length);
+            }
             // Add any extra properties
             List<Element> bits = step.getChildren("argument");
             if (step.getChild("argument") != null)
@@ -198,7 +205,11 @@ public class ScriptLauncher
                 }
                 useargs = argsnew;
             }
-
+            System.out.println("bits: " +  bits);
+            if(bits != null) {
+            	System.out.println("bits.size(): " +  bits.size());
+            }
+            
             // Establish the request service startup
             RequestService requestService = kernelImpl.getServiceManager().getServiceByName(
                     RequestService.class.getName(), RequestService.class);
@@ -218,16 +229,25 @@ public class ScriptLauncher
                 Object[] arguments = {useargs};
 
                 // Useful for debugging, so left in the code...
-                /**System.out.print("About to execute: " + className);
+                System.out.print("About to execute: " + className);
                 for (String param : useargs)
                 {
                     System.out.print(" " + param);
                 }
-                System.out.println("");**/
-
+                System.out.println("");
+                System.out.println("argTypes: " +  argTypes); 
+                if(argTypes != null){
+                	System.out.println("argTypes.length: " +  argTypes.length);
+                }
+                
+                System.out.println("target: " + target);
                 Method main = target.getMethod("main", argTypes);
+                System.out.println("main: " + main);
+                
+                System.out.println("arguments.length: " + arguments.length);
                 main.invoke(null, arguments);
-
+                System.out.println("After main.invoke(null, arguments)");
+                System.out.println("requestService: "+ requestService);
                 // ensure we close out the request (happy request)
                 requestService.endRequest(null);
             }
