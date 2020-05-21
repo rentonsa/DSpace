@@ -13,16 +13,21 @@
 
 //example mixin to set the text-selection style
 @mixin selection {
-    ::-moz-selection { @content; }
-    ::selection { @content; }
+  ::-moz-selection {
+    @content;
+  }
+  ::selection {
+    @content;
+  }
 }
 
 @include selection {
-    color: white;
-    background: hotpink;
+  color: white;
+  background: hotpink;
 }
 
-.publication-records-modal, .publication-records-modal ul {
+.publication-records-modal,
+.publication-records-modal ul {
   list-style-type: none;
   padding-left: 0px;
 }
@@ -36,18 +41,17 @@
 }
 
 .imported {
-  background-color: #E2E2E2;
+  background-color: #e2e2e2;
 }
 
 #aspect_submission_StepTransformer_div_StartSubmissionLookupStep {
-
   #aspect_submission_StepTransformer_field_search {
     width: 81%;
     display: inline;
   }
 
   #aspect_submission_StepTransformer_field_lookup {
-    width:19%
+    width: 19%;
   }
 
   .modal .modal-body {
@@ -55,7 +59,10 @@
     overflow-y: auto;
   }
 
-  #aspect_submission_StepTransformer_item_publication-title{
-    margin-bottom:5px;
+  #aspect_submission_StepTransformer_item_publication-title {
+    margin-bottom: 5px;
   }
+}
+body {
+  color: blue;
 }
