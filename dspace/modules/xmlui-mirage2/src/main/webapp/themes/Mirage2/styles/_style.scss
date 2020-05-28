@@ -12,6 +12,167 @@
  */
 
 //example mixin to set the text-selection style
+
+
+
+@media (max-width: 812px) {
+  header.colman-header img {
+    max-width: 100%;
+  }
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.428571429;
+  color: #333;
+  font-weight: 200;
+  margin: 0 0 10px;
+}
+
+header .navbar-default a {
+  color: #333;
+  text-decoration: none;
+  position: relative;
+  padding: 5px;
+}
+
+header .navbar-default a:hover{
+  text-decoration: none;
+}
+
+header .navbar-default a:before{
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #FFF;
+  visibility: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+header .navbar-default a:hover:before{
+  visibility: visible;
+  width: 100%;
+}
+
+.breadcrumb {
+  margin-bottom: 0px !important;
+  padding: 18px 15px !important;
+  background-color: #F3E3D4;
+}
+
+.breadcrumb>li {
+  display: inline-block;
+  padding-top: 5px;
+  color: #333333;
+}
+
+
+header .navbar-default .navbar-nav {
+  margin-bottom: 0px;
+  padding: 22px;
+  color: #333333;
+}
+
+.navbar-nav>li>a {
+  color: #333;
+  padding: 5px;
+}
+.navbar-default .navbar-nav>li>a:hover, header .navbar-default .navbar-nav>li>a:focus {
+  color: #fff;
+  background-color: transparent;
+}
+
+header .navbar-default .navbar-nav:hover {
+  background-color: transparent;
+}
+
+header .navbar-default .navbar-nav>li>a:hover, header .navbar-default .navbar-nav>li>a {
+  color: #333333;
+  position: relative;
+  text-decoration: none;
+  background-color: transparent;
+}
+
+
+header .navbar-default .navbar-nav>li>a:hover {
+  color: #333333;
+}
+
+header .navbar-default .navbar-nav>li>a:before {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #FFF;
+  visibility: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+header .navbar-default .navbar-nav>li>a:hover:before {
+  visibility: visible;
+  width: 100%;
+}
+
+
+.colman-logos {
+  padding-top: 1.5%;
+  padding-bottom: 1.5%;
+}
+
+#crest-head {
+    width: 90px;
+    float: right;
+}
+
+
+
+
+.colman-header span, li {
+    font-size: 20px;
+  }
+
+
+.container {
+  width: 90%;
+}
+
+header .navbar-default {
+  background-color: #F3E3D4;
+  font-weight: 300;
+}
+
+.list-group-item.active, .list-group-item.active:hover, .list-group-item.active:focus {
+  z-index: 2;
+  color: #333;
+  background-color: #F3E3D4;
+  border-color: #F3E3D4;
+}
+.btn-primary {
+  color: #fff;
+  background-color: #F3E3D4;
+  border-color: #F3E3D4;
+}
+
+header .navbar-default .navbar-toggle>li>a, header .navbar-default .navbar-nav>li>a {
+  color: #333;
+}
+
+a.list-group-item .list-group-item-heading {
+  color: #333;
+}
+
+.form-control{
+  border: 1px solid #f3e3d4;
+
+}
+
+
 @mixin selection {
   ::-moz-selection {
     @content;
@@ -63,6 +224,4 @@
     margin-bottom: 5px;
   }
 }
-body {
-  color: blue;
-}
+
