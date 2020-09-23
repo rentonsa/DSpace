@@ -14,10 +14,10 @@ services:
     container_name: dspace
     depends_on:
     - dspacedb
-    image: "${DOCKER_OWNER:-dspace}/dspace:${DSPACE_VER:-dspace-6_x-jdk8-test}"
+    image: "colmantest"
     build:
       context: .
-      dockerfile: Dockerfile.jdk8-test
+      dockerfile: Dockerfile
     networks:
       dspacenet:
     ports:
