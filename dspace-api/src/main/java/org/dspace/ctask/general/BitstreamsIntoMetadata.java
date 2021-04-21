@@ -54,7 +54,10 @@ public class BitstreamsIntoMetadata extends AbstractCurationTask
         {
             try {
                 Item item = (Item)dso;
-                itemService.clearMetadata(Curator.curationContext(), item, "dc", "format", Item.ANY, Item.ANY);
+                /*SR -don't blitz format, just blitz original and thumbnail
+                itemService.clearMetadata(Curator.curationContext(), item, "dc", "format", Item.ANY, Item.ANY);*/
+                itemService.clearMetadata(Curator.curationContext(), item, "dc", "format", "original", Item.ANY);
+                itemService.clearMetadata(Curator.curationContext(), item, "dc", "format", "thumbnail", Item.ANY);
                 for (Bundle bundle : item.getBundles()) {
                     if ("ORIGINAL".equals(bundle.getName())) {
                         for (Bitstream bitstream : bundle.getBitstreams()) {
